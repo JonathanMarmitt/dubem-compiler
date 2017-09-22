@@ -10,6 +10,7 @@ grammar Dubem;
 @members
 {
     private static ArrayList<String> symbol_table;
+    private static ArrayList<String> symbol_table_not_used;
 
     private static int stack_cur, stack_max;
 
@@ -27,7 +28,8 @@ grammar Dubem;
         CommonTokenStream tokens = new CommonTokenStream(lexer);
         DubemParser parser = new DubemParser(tokens);
 
-        symbol_table = new ArrayList<String>();        
+        symbol_table = new ArrayList<String>();
+        symbol_table_not_used = new ArrayList<String>();   
         parser.program();
         //System.out.println("symbols: " + symbol_table);
     }
@@ -43,8 +45,10 @@ REMAINDER	: '%' ;
 OPEN_P		: '(' ;
 CLOSE_P		: ')' ;
 ATTRIB      : '=' ;
+COMMA       : ',' ;
 
-PRINT		: 'print'; 
+PRINT		: 'print';
+READ_INT    : 'read_int';
 
 COMMENT     : '#' ~('\n')* { skip(); };
 
@@ -75,13 +79,17 @@ program
 	( statement )*
 	
 	{ 
+		for(int i = 0; i < symbol_table_not_used.size(); i++)
+		{
+			System.err.println("WARNING: nao usou "+symbol_table_not_used.get(i));
+		}
+
 		System.out.println("  return"); 
 		System.out.println(".limit stack"+ " " + stack_max); 
-		System.out.println(".limit locals"+ " " + 4); 
+		System.out.println(".limit locals"+ " " + symbol_table.size()+1); 
 		System.out.println(".end method");
 	} 	
-    ;
-
+;
 statement
   :	NL | st_print | st_attrib
 ;
@@ -91,11 +99,18 @@ st_print
 	{
 		emit("getstatic java/lang/System/out Ljava/io/PrintStream;", +1);
 	}
-	exp_aritmetic NL
+	exp_aritmetic 
 	{
-		emit("invokevirtual java/io/PrintStream/println(I)V\n", -2);
+		emit("invokevirtual java/io/PrintStream/print(I)V\n", -2);
 	}
-
+	(COMMA { emit("getstatic java/lang/System/out Ljava/io/PrintStream;", +1); } 
+			exp_aritmetic 
+		   { emit(" invokevirtual java/io/PrintStream/print(I)V\n", -2); }
+	)* NL
+	{
+		emit("getstatic java/lang/System/out Ljava/io/PrintStream;", +1);
+		emit(" invokevirtual java/io/PrintStream/println()V\n", -1);
+	}
 ;
 st_attrib
   : NAME ATTRIB
@@ -103,6 +118,7 @@ st_attrib
   	{
   		if(symbol_table.indexOf($NAME.text) == -1){
   			symbol_table.add($NAME.text);
+  			symbol_table_not_used.add($NAME.text);
   		}
 
   		emit("istore "+symbol_table.indexOf($NAME.text), -1);
@@ -121,15 +137,21 @@ term
 	)*
 	
 ;
-    
 factor
     :   NUMBER
         	{ emit(" ldc " + $NUMBER.text, +1); }
     |	OPEN_P exp_aritmetic CLOSE_P
     |   NAME
-    		{  if(symbol_table.indexOf($NAME.text) >= 0)
+    		{  if(symbol_table.indexOf($NAME.text) >= 0){
     				emit(" iload "+symbol_table.indexOf($NAME.text), +1);
+    				symbol_table_not_used.remove($NAME.text); //removendo
+    			}
     			else
-    				System.exit(0);
+				{	
+					System.err.println("WARNING: Used non declared variable "+$NAME.text);
+					System.exit(1);
+				}
     		}
+    |   READ_INT
+    		{ emit(" invokestatic Runtime/readInt()I", +1);	}
 ;

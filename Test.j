@@ -7,17 +7,20 @@ invokenonvirtual java/lang/Object/<init>()V
 return
 .end method
 .method public static main([Ljava/lang/String;)V
-    ldc 4
+    ldc 2
    istore 0
     iload 0
+    ldc 3
+   imul
    istore 1
    getstatic java/lang/System/out Ljava/io/PrintStream;
-    iload 1
-    ldc 9
-   iadd
-   invokevirtual java/io/PrintStream/println(I)V
+    iload 0
+   invokevirtual java/io/PrintStream/print(I)V
+
+   getstatic java/lang/System/out Ljava/io/PrintStream;
+    invokevirtual java/io/PrintStream/println()V
 
   return
-.limit stack 3
-.limit locals 4
+.limit stack 2
+.limit locals 21
 .end method
