@@ -47,8 +47,17 @@ CLOSE_P		: ')' ;
 ATTRIB      : '=' ;
 COMMA       : ',' ;
 
+EQUALS      : '==';
+NE          : '!=';
+LT          : '<' ;
+LE          : '<=';
+GT          : '>' ;
+GE          : '>=';
+
 PRINT		: 'print';
 READ_INT    : 'read_int';
+WHILE       : 'while';
+END         : 'end';
 
 COMMENT     : '#' ~('\n')* { skip(); };
 
@@ -91,9 +100,8 @@ program
 	} 	
 ;
 statement
-  :	NL | st_print | st_attrib
+  :	NL | st_print | st_attrib | st_while
 ;
-
 st_print
   :	PRINT
 	{
@@ -123,6 +131,12 @@ st_attrib
 
   		emit("istore "+symbol_table.indexOf($NAME.text), -1);
   	}
+;
+st_while
+  	: WHILE exp_comparison NL (statement)* END NL
+;
+exp_comparison
+	: exp_aritmetic ( EQUALS || NE || LT || LE || GT || GE ) exp_aritmetic
 ;
 exp_aritmetic
     :   term ( op = ( PLUS | MINUS ) term 
