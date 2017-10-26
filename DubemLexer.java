@@ -80,6 +80,7 @@ public class DubemLexer extends Lexer {
 	    private static ArrayList<String> symbol_table;
 	    private static ArrayList<String> symbol_table_not_used;
 	    private static int count_while = 0;
+	    private static int count_if = 0;
 
 	    private static int stack_cur, stack_max;
 

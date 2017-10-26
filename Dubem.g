@@ -12,6 +12,7 @@ grammar Dubem;
     private static ArrayList<String> symbol_table;
     private static ArrayList<String> symbol_table_not_used;
     private static int count_while = 0;
+    private static int count_if = 0;
 
     private static int stack_cur, stack_max;
 
@@ -152,15 +153,16 @@ st_while
 ;
 st_if
 	: IF 
+	{ int local = ++count_if; }
 	s = exp_comparison	NL
-		{ emit($s.bytecode + " NOT_IF", -2); }
+		{ emit($s.bytecode + " NOT_IF"+local, -2); }
 	(statement)*
 	{ 
-		emit("goto END_ELSE", 0);
-		System.out.println("NOT_IF:");
+		emit("goto END_ELSE"+local, 0);
+		System.out.println("NOT_IF"+local+":");
 	}
 	(ELSE NL (statement)* )?
-		{ System.out.println("END_ELSE:"); }
+		{ System.out.println("END_ELSE"+local+":"); }
 	END NL		
 ;
 exp_comparison returns [String bytecode]
