@@ -70,6 +70,16 @@ public interface DubemListener extends ParseTreeListener {
 	 */
 	void exitSt_if(DubemParser.St_ifContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link DubemParser#st_for}.
+	 * @param ctx the parse tree
+	 */
+	void enterSt_for(DubemParser.St_forContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link DubemParser#st_for}.
+	 * @param ctx the parse tree
+	 */
+	void exitSt_for(DubemParser.St_forContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link DubemParser#exp_comparison}.
 	 * @param ctx the parse tree
 	 */

@@ -7,64 +7,20 @@ invokenonvirtual java/lang/Object/<init>()V
 return
 .end method
 .method public static main([Ljava/lang/String;)V
-    ldc 1
+    ldc 10
    istore 0
-    ldc 2
-   istore 1
-    ldc 3
-   istore 2
+FOR_COMP_1:
     iload 0
-    iload 1
-   if_icmpne NOT_IF1
-    iload 1
-    iload 2
-   if_icmpeq NOT_IF2
-   getstatic java/lang/System/out Ljava/io/PrintStream;
-    iload 1
-   invokevirtual java/io/PrintStream/print(I)V
-
-   getstatic java/lang/System/out Ljava/io/PrintStream;
-    invokevirtual java/io/PrintStream/println()V
-
-   goto END_ELSE2
-NOT_IF2:
-   getstatic java/lang/System/out Ljava/io/PrintStream;
-    iload 2
-   invokevirtual java/io/PrintStream/print(I)V
-
-   getstatic java/lang/System/out Ljava/io/PrintStream;
-    invokevirtual java/io/PrintStream/println()V
-
-END_ELSE2:
-   goto END_ELSE1
-NOT_IF1:
+    ldc 0
+   if_icmple END_FOR_1
+   goto FOR_1
+FOR_INC_1:
     iload 0
-    iload 1
-   if_icmple NOT_IF3
-   getstatic java/lang/System/out Ljava/io/PrintStream;
-    iload 1
-   invokevirtual java/io/PrintStream/print(I)V
-
-   getstatic java/lang/System/out Ljava/io/PrintStream;
-    invokevirtual java/io/PrintStream/println()V
-
-   goto END_ELSE3
-NOT_IF3:
-    iload 0
-    iload 1
-   if_icmpge NOT_IF4
-    iload 1
-    iload 2
-   if_icmple NOT_IF5
-   getstatic java/lang/System/out Ljava/io/PrintStream;
-    iload 2
-   invokevirtual java/io/PrintStream/print(I)V
-
-   getstatic java/lang/System/out Ljava/io/PrintStream;
-    invokevirtual java/io/PrintStream/println()V
-
-   goto END_ELSE5
-NOT_IF5:
+    ldc 1
+   isub
+   istore 0
+   goto FOR_COMP_1
+FOR_1:
    getstatic java/lang/System/out Ljava/io/PrintStream;
     iload 0
    invokevirtual java/io/PrintStream/print(I)V
@@ -72,13 +28,9 @@ NOT_IF5:
    getstatic java/lang/System/out Ljava/io/PrintStream;
     invokevirtual java/io/PrintStream/println()V
 
-END_ELSE5:
-   goto END_ELSE4
-NOT_IF4:
-END_ELSE4:
-END_ELSE3:
-END_ELSE1:
+   goto FOR_INC_1
+END_FOR_1:
   return
 .limit stack 2
-.limit locals 31
+.limit locals 11
 .end method
