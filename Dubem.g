@@ -66,6 +66,9 @@ ELSE        : 'else';
 FOR         : 'for';
 END         : 'end';
 
+READ_STRING : 'read_string';
+STRING      : '"' ~('"')* '"';
+
 COMMENT     : '#' ~('\n')* { skip(); };
 
 NUMBER     	: '0'..'9'+ ;
@@ -114,13 +117,22 @@ st_print
 	{
 		emit("getstatic java/lang/System/out Ljava/io/PrintStream;", +1);
 	}
-	exp_aritmetic 
+	e1 = exp_aritmetic 
 	{
-		emit("invokevirtual java/io/PrintStream/print(I)V\n", -2);
+		if( $e1.type == 'i')
+			emit("invokevirtual java/io/PrintStream/print(I)V\n", -2);
+		else
+			emit("invokevirtual java/io/PrintStream/print(Ljava/lang/String;)V\n", -2);
 	}
 	(COMMA { emit("getstatic java/lang/System/out Ljava/io/PrintStream;", +1); } 
-			exp_aritmetic 
-		   { emit(" invokevirtual java/io/PrintStream/print(I)V\n", -2); }
+			e2 = exp_aritmetic
+		   { 
+		   		if($e2.type == 'i')
+		   			emit(" invokevirtual java/io/PrintStream/print(I)V\n", -2);
+		   		else
+		   			emit(" invokevirtual java/io/PrintStream/print(Ljava/lang/String;)V\n", -2);
+		    }
+
 	)* NL
 	{
 		emit("getstatic java/lang/System/out Ljava/io/PrintStream;", +1);
@@ -199,31 +211,43 @@ exp_comparison returns [String bytecode]
 		else if($op.type == LT) $bytecode = "if_icmpge";
 		else if($op.type == LE) $bytecode = "if_icmpgt";
 		else if($op.type == GT) $bytecode = "if_icmple";
-		else if($op.type == GE) $bytecode = "if_icmplt";
-
+		else if($op.type == GE) $bytecode = "if_icmplt";	
 	}
 ;
-exp_aritmetic
-    :   term ( op = ( PLUS | MINUS ) term 
-		{ emit($op.type == PLUS ? "iadd" : "isub", -1); } 
+exp_aritmetic returns [char type]
+    :   t1 = term ( op = ( PLUS | MINUS ) t2 = term 
+		{ 
+			emit($op.type == PLUS ? "iadd" : "isub", -1);			
+		} 
 	)*
+		{ $type = $t1.type; }
 	
 ;
-term    
-    :   factor ( op = ( TIMES  | OVER | REMAINDER) factor 
-		{ emit($op.type == TIMES ? "imul" :
-			($op.type == OVER ? "idiv": "irem"), -1); } 
+term returns [char type]  
+    :   f1 = factor ( op = ( TIMES  | OVER | REMAINDER) f2 = factor 
+		{ 
+			emit($op.type == TIMES ? "imul" :
+			($op.type == OVER ? "idiv": "irem"), -1); 
+		} 
 	)*
-	
+	{ $type = $f1.type; }
 ;
-factor
+factor returns [char type]
     :   NUMBER
-        	{ emit(" ldc " + $NUMBER.text, +1); }
+        	{ 
+        		emit(" ldc " + $NUMBER.text, +1); 
+        		$type = 'i';
+        	}
     |	OPEN_P exp_aritmetic CLOSE_P
+	    	{
+	    		$type = $exp_aritmetic.type;
+	    	}
     |   NAME
-    		{  if(symbol_table.indexOf($NAME.text) >= 0){
+    		{
+    		    if(symbol_table.indexOf($NAME.text) >= 0){
     				emit(" iload "+symbol_table.indexOf($NAME.text), +1);
     				symbol_table_not_used.remove($NAME.text); //removendo
+    				$type = 'i';
     			}
     			else
 				{	
@@ -232,5 +256,17 @@ factor
 				}
     		}
     |   READ_INT
-    		{ emit(" invokestatic Runtime/readInt()I", +1);	}
+    		{ 
+    			emit(" invokestatic Runtime/readInt()I", +1);
+    			$type = 'i';
+    		}
+    |   READ_STRING
+    		{
+    			$type = 'a';
+    		}
+    |   STRING
+	    	{
+	    		emit(" ldc " + $STRING.text, +1); 
+	        	$type = 'a';
+	    	}
 ;

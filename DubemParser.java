@@ -21,8 +21,8 @@ public class DubemParser extends Parser {
 	public static final int
 		PLUS=1, MINUS=2, TIMES=3, OVER=4, REMAINDER=5, OPEN_P=6, CLOSE_P=7, ATTRIB=8, 
 		COMMA=9, SEMICOLON=10, EQ=11, NE=12, LT=13, LE=14, GT=15, GE=16, PRINT=17, 
-		READ_INT=18, WHILE=19, IF=20, ELSE=21, FOR=22, END=23, COMMENT=24, NUMBER=25, 
-		NAME=26, SPACE=27, NL=28;
+		READ_INT=18, WHILE=19, IF=20, ELSE=21, FOR=22, END=23, READ_STRING=24, 
+		STRING=25, COMMENT=26, NUMBER=27, NAME=28, SPACE=29, NL=30;
 	public static final int
 		RULE_program = 0, RULE_statement = 1, RULE_st_print = 2, RULE_st_attrib = 3, 
 		RULE_st_while = 4, RULE_st_if = 5, RULE_st_for = 6, RULE_exp_comparison = 7, 
@@ -35,13 +35,13 @@ public class DubemParser extends Parser {
 	private static final String[] _LITERAL_NAMES = {
 		null, "'+'", "'-'", "'*'", "'/'", "'%'", "'('", "')'", "'='", "','", "';'", 
 		"'=='", "'!='", "'<'", "'<='", "'>'", "'>='", "'print'", "'read_int'", 
-		"'while'", "'if'", "'else'", "'for'", "'end'"
+		"'while'", "'if'", "'else'", "'for'", "'end'", "'read_string'"
 	};
 	private static final String[] _SYMBOLIC_NAMES = {
 		null, "PLUS", "MINUS", "TIMES", "OVER", "REMAINDER", "OPEN_P", "CLOSE_P", 
 		"ATTRIB", "COMMA", "SEMICOLON", "EQ", "NE", "LT", "LE", "GT", "GE", "PRINT", 
-		"READ_INT", "WHILE", "IF", "ELSE", "FOR", "END", "COMMENT", "NUMBER", 
-		"NAME", "SPACE", "NL"
+		"READ_INT", "WHILE", "IF", "ELSE", "FOR", "END", "READ_STRING", "STRING", 
+		"COMMENT", "NUMBER", "NAME", "SPACE", "NL"
 	};
 	public static final Vocabulary VOCABULARY = new VocabularyImpl(_LITERAL_NAMES, _SYMBOLIC_NAMES);
 
@@ -298,14 +298,16 @@ public class DubemParser extends Parser {
 	}
 
 	public static class St_printContext extends ParserRuleContext {
+		public Exp_aritmeticContext e1;
+		public Exp_aritmeticContext e2;
 		public TerminalNode PRINT() { return getToken(DubemParser.PRINT, 0); }
+		public TerminalNode NL() { return getToken(DubemParser.NL, 0); }
 		public List<Exp_aritmeticContext> exp_aritmetic() {
 			return getRuleContexts(Exp_aritmeticContext.class);
 		}
 		public Exp_aritmeticContext exp_aritmetic(int i) {
 			return getRuleContext(Exp_aritmeticContext.class,i);
 		}
-		public TerminalNode NL() { return getToken(DubemParser.NL, 0); }
 		public List<TerminalNode> COMMA() { return getTokens(DubemParser.COMMA); }
 		public TerminalNode COMMA(int i) {
 			return getToken(DubemParser.COMMA, i);
@@ -337,9 +339,12 @@ public class DubemParser extends Parser {
 					emit("getstatic java/lang/System/out Ljava/io/PrintStream;", +1);
 				
 			setState(43);
-			exp_aritmetic();
+			((St_printContext)_localctx).e1 = exp_aritmetic();
 
-					emit("invokevirtual java/io/PrintStream/print(I)V\n", -2);
+					if( ((St_printContext)_localctx).e1.type == 'i')
+						emit("invokevirtual java/io/PrintStream/print(I)V\n", -2);
+					else
+						emit("invokevirtual java/io/PrintStream/print(Ljava/lang/String;)V\n", -2);
 				
 			setState(52);
 			_errHandler.sync(this);
@@ -351,8 +356,13 @@ public class DubemParser extends Parser {
 				match(COMMA);
 				 emit("getstatic java/lang/System/out Ljava/io/PrintStream;", +1); 
 				setState(47);
-				exp_aritmetic();
-				 emit(" invokevirtual java/io/PrintStream/print(I)V\n", -2); 
+				((St_printContext)_localctx).e2 = exp_aritmetic();
+				 
+						   		if(((St_printContext)_localctx).e2.type == 'i')
+						   			emit(" invokevirtual java/io/PrintStream/print(I)V\n", -2);
+						   		else
+						   			emit(" invokevirtual java/io/PrintStream/print(Ljava/lang/String;)V\n", -2);
+						    
 				}
 				}
 				setState(54);
@@ -786,8 +796,7 @@ public class DubemParser extends Parser {
 					else if((((Exp_comparisonContext)_localctx).op!=null?((Exp_comparisonContext)_localctx).op.getType():0) == LT) ((Exp_comparisonContext)_localctx).bytecode =  "if_icmpge";
 					else if((((Exp_comparisonContext)_localctx).op!=null?((Exp_comparisonContext)_localctx).op.getType():0) == LE) ((Exp_comparisonContext)_localctx).bytecode =  "if_icmpgt";
 					else if((((Exp_comparisonContext)_localctx).op!=null?((Exp_comparisonContext)_localctx).op.getType():0) == GT) ((Exp_comparisonContext)_localctx).bytecode =  "if_icmple";
-					else if((((Exp_comparisonContext)_localctx).op!=null?((Exp_comparisonContext)_localctx).op.getType():0) == GE) ((Exp_comparisonContext)_localctx).bytecode =  "if_icmplt";
-
+					else if((((Exp_comparisonContext)_localctx).op!=null?((Exp_comparisonContext)_localctx).op.getType():0) == GE) ((Exp_comparisonContext)_localctx).bytecode =  "if_icmplt";	
 				
 			}
 		}
@@ -803,7 +812,10 @@ public class DubemParser extends Parser {
 	}
 
 	public static class Exp_aritmeticContext extends ParserRuleContext {
+		public char type;
+		public TermContext t1;
 		public Token op;
+		public TermContext t2;
 		public List<TermContext> term() {
 			return getRuleContexts(TermContext.class);
 		}
@@ -840,7 +852,7 @@ public class DubemParser extends Parser {
 			enterOuterAlt(_localctx, 1);
 			{
 			setState(131);
-			term();
+			((Exp_aritmeticContext)_localctx).t1 = term();
 			setState(138);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
@@ -856,14 +868,17 @@ public class DubemParser extends Parser {
 					consume();
 				}
 				setState(133);
-				term();
-				 emit((((Exp_aritmeticContext)_localctx).op!=null?((Exp_aritmeticContext)_localctx).op.getType():0) == PLUS ? "iadd" : "isub", -1); 
+				((Exp_aritmeticContext)_localctx).t2 = term();
+				 
+							emit((((Exp_aritmeticContext)_localctx).op!=null?((Exp_aritmeticContext)_localctx).op.getType():0) == PLUS ? "iadd" : "isub", -1);			
+						
 				}
 				}
 				setState(140);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 			}
+			 ((Exp_aritmeticContext)_localctx).type =  ((Exp_aritmeticContext)_localctx).t1.type; 
 			}
 		}
 		catch (RecognitionException re) {
@@ -878,7 +893,10 @@ public class DubemParser extends Parser {
 	}
 
 	public static class TermContext extends ParserRuleContext {
+		public char type;
+		public FactorContext f1;
 		public Token op;
+		public FactorContext f2;
 		public List<FactorContext> factor() {
 			return getRuleContexts(FactorContext.class);
 		}
@@ -918,15 +936,15 @@ public class DubemParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(141);
-			factor();
-			setState(148);
+			setState(143);
+			((TermContext)_localctx).f1 = factor();
+			setState(150);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
 			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << TIMES) | (1L << OVER) | (1L << REMAINDER))) != 0)) {
 				{
 				{
-				setState(142);
+				setState(144);
 				((TermContext)_localctx).op = _input.LT(1);
 				_la = _input.LA(1);
 				if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << TIMES) | (1L << OVER) | (1L << REMAINDER))) != 0)) ) {
@@ -934,16 +952,19 @@ public class DubemParser extends Parser {
 				} else {
 					consume();
 				}
-				setState(143);
-				factor();
-				 emit((((TermContext)_localctx).op!=null?((TermContext)_localctx).op.getType():0) == TIMES ? "imul" :
+				setState(145);
+				((TermContext)_localctx).f2 = factor();
+				 
+							emit((((TermContext)_localctx).op!=null?((TermContext)_localctx).op.getType():0) == TIMES ? "imul" :
 							((((TermContext)_localctx).op!=null?((TermContext)_localctx).op.getType():0) == OVER ? "idiv": "irem"), -1); 
+						
 				}
 				}
-				setState(150);
+				setState(152);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 			}
+			 ((TermContext)_localctx).type =  ((TermContext)_localctx).f1.type; 
 			}
 		}
 		catch (RecognitionException re) {
@@ -958,8 +979,11 @@ public class DubemParser extends Parser {
 	}
 
 	public static class FactorContext extends ParserRuleContext {
+		public char type;
 		public Token NUMBER;
+		public Exp_aritmeticContext exp_aritmetic;
 		public Token NAME;
+		public Token STRING;
 		public TerminalNode NUMBER() { return getToken(DubemParser.NUMBER, 0); }
 		public TerminalNode OPEN_P() { return getToken(DubemParser.OPEN_P, 0); }
 		public Exp_aritmeticContext exp_aritmetic() {
@@ -968,6 +992,8 @@ public class DubemParser extends Parser {
 		public TerminalNode CLOSE_P() { return getToken(DubemParser.CLOSE_P, 0); }
 		public TerminalNode NAME() { return getToken(DubemParser.NAME, 0); }
 		public TerminalNode READ_INT() { return getToken(DubemParser.READ_INT, 0); }
+		public TerminalNode READ_STRING() { return getToken(DubemParser.READ_STRING, 0); }
+		public TerminalNode STRING() { return getToken(DubemParser.STRING, 0); }
 		public FactorContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
@@ -986,35 +1012,43 @@ public class DubemParser extends Parser {
 		FactorContext _localctx = new FactorContext(_ctx, getState());
 		enterRule(_localctx, 20, RULE_factor);
 		try {
-			setState(161);
+			setState(170);
 			switch (_input.LA(1)) {
 			case NUMBER:
 				enterOuterAlt(_localctx, 1);
 				{
-				setState(151);
+				setState(155);
 				((FactorContext)_localctx).NUMBER = match(NUMBER);
-				 emit(" ldc " + (((FactorContext)_localctx).NUMBER!=null?((FactorContext)_localctx).NUMBER.getText():null), +1); 
+				 
+				        		emit(" ldc " + (((FactorContext)_localctx).NUMBER!=null?((FactorContext)_localctx).NUMBER.getText():null), +1); 
+				        		((FactorContext)_localctx).type =  'i';
+				        	
 				}
 				break;
 			case OPEN_P:
 				enterOuterAlt(_localctx, 2);
 				{
-				setState(153);
+				setState(157);
 				match(OPEN_P);
-				setState(154);
-				exp_aritmetic();
-				setState(155);
+				setState(158);
+				((FactorContext)_localctx).exp_aritmetic = exp_aritmetic();
+				setState(159);
 				match(CLOSE_P);
+
+					    		((FactorContext)_localctx).type =  ((FactorContext)_localctx).exp_aritmetic.type;
+					    	
 				}
 				break;
 			case NAME:
 				enterOuterAlt(_localctx, 3);
 				{
-				setState(157);
+				setState(162);
 				((FactorContext)_localctx).NAME = match(NAME);
-				  if(symbol_table.indexOf((((FactorContext)_localctx).NAME!=null?((FactorContext)_localctx).NAME.getText():null)) >= 0){
+
+				    		    if(symbol_table.indexOf((((FactorContext)_localctx).NAME!=null?((FactorContext)_localctx).NAME.getText():null)) >= 0){
 				    				emit(" iload "+symbol_table.indexOf((((FactorContext)_localctx).NAME!=null?((FactorContext)_localctx).NAME.getText():null)), +1);
 				    				symbol_table_not_used.remove((((FactorContext)_localctx).NAME!=null?((FactorContext)_localctx).NAME.getText():null)); //removendo
+				    				((FactorContext)_localctx).type =  'i';
 				    			}
 				    			else
 								{	
@@ -1027,9 +1061,33 @@ public class DubemParser extends Parser {
 			case READ_INT:
 				enterOuterAlt(_localctx, 4);
 				{
-				setState(159);
+				setState(164);
 				match(READ_INT);
-				 emit(" invokestatic Runtime/readInt()I", +1);	
+				 
+				    			emit(" invokestatic Runtime/readInt()I", +1);
+				    			((FactorContext)_localctx).type =  'i';
+				    		
+				}
+				break;
+			case READ_STRING:
+				enterOuterAlt(_localctx, 5);
+				{
+				setState(166);
+				match(READ_STRING);
+
+				    			((FactorContext)_localctx).type =  'a';
+				    		
+				}
+				break;
+			case STRING:
+				enterOuterAlt(_localctx, 6);
+				{
+				setState(168);
+				((FactorContext)_localctx).STRING = match(STRING);
+
+					    		emit(" ldc " + (((FactorContext)_localctx).STRING!=null?((FactorContext)_localctx).STRING.getText():null), +1); 
+					        	((FactorContext)_localctx).type =  'a';
+					    	
 				}
 				break;
 			default:
@@ -1048,52 +1106,55 @@ public class DubemParser extends Parser {
 	}
 
 	public static final String _serializedATN =
-		"\3\u0430\ud6d1\u8206\uad2d\u4417\uaef1\u8d80\uaadd\3\36\u00a6\4\2\t\2"+
-		"\4\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7\4\b\t\b\4\t\t\t\4\n\t\n\4\13"+
-		"\t\13\4\f\t\f\3\2\3\2\7\2\33\n\2\f\2\16\2\36\13\2\3\2\3\2\3\3\3\3\3\3"+
-		"\3\3\3\3\3\3\3\3\3\3\5\3*\n\3\3\4\3\4\3\4\3\4\3\4\3\4\3\4\3\4\3\4\7\4"+
-		"\65\n\4\f\4\16\48\13\4\3\4\3\4\3\4\3\5\3\5\3\5\3\5\3\5\3\6\3\6\3\6\3\6"+
-		"\3\6\3\6\7\6H\n\6\f\6\16\6K\13\6\3\6\3\6\3\6\3\6\3\6\3\7\3\7\3\7\3\7\3"+
-		"\7\3\7\7\7X\n\7\f\7\16\7[\13\7\3\7\3\7\3\7\3\7\7\7a\n\7\f\7\16\7d\13\7"+
-		"\5\7f\n\7\3\7\3\7\3\7\3\7\3\b\3\b\3\b\3\b\3\b\3\b\3\b\3\b\3\b\3\b\3\b"+
-		"\3\b\7\bx\n\b\f\b\16\b{\13\b\3\b\3\b\3\b\3\b\3\t\3\t\3\t\3\t\3\t\3\n\3"+
-		"\n\3\n\3\n\3\n\7\n\u008b\n\n\f\n\16\n\u008e\13\n\3\13\3\13\3\13\3\13\3"+
-		"\13\7\13\u0095\n\13\f\13\16\13\u0098\13\13\3\f\3\f\3\f\3\f\3\f\3\f\3\f"+
-		"\3\f\3\f\3\f\5\f\u00a4\n\f\3\f\2\2\r\2\4\6\b\n\f\16\20\22\24\26\2\5\3"+
-		"\2\r\22\3\2\3\4\3\2\5\7\u00ab\2\30\3\2\2\2\4)\3\2\2\2\6+\3\2\2\2\b<\3"+
-		"\2\2\2\nA\3\2\2\2\fQ\3\2\2\2\16k\3\2\2\2\20\u0080\3\2\2\2\22\u0085\3\2"+
-		"\2\2\24\u008f\3\2\2\2\26\u00a3\3\2\2\2\30\34\b\2\1\2\31\33\5\4\3\2\32"+
-		"\31\3\2\2\2\33\36\3\2\2\2\34\32\3\2\2\2\34\35\3\2\2\2\35\37\3\2\2\2\36"+
-		"\34\3\2\2\2\37 \b\2\1\2 \3\3\2\2\2!*\7\36\2\2\"*\5\6\4\2#$\5\b\5\2$%\7"+
-		"\36\2\2%*\3\2\2\2&*\5\n\6\2\'*\5\f\7\2(*\5\16\b\2)!\3\2\2\2)\"\3\2\2\2"+
-		")#\3\2\2\2)&\3\2\2\2)\'\3\2\2\2)(\3\2\2\2*\5\3\2\2\2+,\7\23\2\2,-\b\4"+
-		"\1\2-.\5\22\n\2.\66\b\4\1\2/\60\7\13\2\2\60\61\b\4\1\2\61\62\5\22\n\2"+
-		"\62\63\b\4\1\2\63\65\3\2\2\2\64/\3\2\2\2\658\3\2\2\2\66\64\3\2\2\2\66"+
-		"\67\3\2\2\2\679\3\2\2\28\66\3\2\2\29:\7\36\2\2:;\b\4\1\2;\7\3\2\2\2<="+
-		"\7\34\2\2=>\7\n\2\2>?\5\22\n\2?@\b\5\1\2@\t\3\2\2\2AB\7\25\2\2BC\b\6\1"+
-		"\2CD\5\20\t\2DE\7\36\2\2EI\b\6\1\2FH\5\4\3\2GF\3\2\2\2HK\3\2\2\2IG\3\2"+
-		"\2\2IJ\3\2\2\2JL\3\2\2\2KI\3\2\2\2LM\b\6\1\2MN\7\31\2\2NO\7\36\2\2OP\b"+
-		"\6\1\2P\13\3\2\2\2QR\7\26\2\2RS\b\7\1\2ST\5\20\t\2TU\7\36\2\2UY\b\7\1"+
-		"\2VX\5\4\3\2WV\3\2\2\2X[\3\2\2\2YW\3\2\2\2YZ\3\2\2\2Z\\\3\2\2\2[Y\3\2"+
-		"\2\2\\e\b\7\1\2]^\7\27\2\2^b\7\36\2\2_a\5\4\3\2`_\3\2\2\2ad\3\2\2\2b`"+
-		"\3\2\2\2bc\3\2\2\2cf\3\2\2\2db\3\2\2\2e]\3\2\2\2ef\3\2\2\2fg\3\2\2\2g"+
-		"h\b\7\1\2hi\7\31\2\2ij\7\36\2\2j\r\3\2\2\2kl\7\30\2\2lm\b\b\1\2mn\5\b"+
-		"\5\2no\7\f\2\2op\b\b\1\2pq\5\20\t\2qr\7\f\2\2rs\b\b\1\2st\5\b\5\2tu\7"+
-		"\36\2\2uy\b\b\1\2vx\5\4\3\2wv\3\2\2\2x{\3\2\2\2yw\3\2\2\2yz\3\2\2\2z|"+
-		"\3\2\2\2{y\3\2\2\2|}\b\b\1\2}~\7\31\2\2~\177\7\36\2\2\177\17\3\2\2\2\u0080"+
-		"\u0081\5\22\n\2\u0081\u0082\t\2\2\2\u0082\u0083\5\22\n\2\u0083\u0084\b"+
-		"\t\1\2\u0084\21\3\2\2\2\u0085\u008c\5\24\13\2\u0086\u0087\t\3\2\2\u0087"+
-		"\u0088\5\24\13\2\u0088\u0089\b\n\1\2\u0089\u008b\3\2\2\2\u008a\u0086\3"+
-		"\2\2\2\u008b\u008e\3\2\2\2\u008c\u008a\3\2\2\2\u008c\u008d\3\2\2\2\u008d"+
-		"\23\3\2\2\2\u008e\u008c\3\2\2\2\u008f\u0096\5\26\f\2\u0090\u0091\t\4\2"+
-		"\2\u0091\u0092\5\26\f\2\u0092\u0093\b\13\1\2\u0093\u0095\3\2\2\2\u0094"+
-		"\u0090\3\2\2\2\u0095\u0098\3\2\2\2\u0096\u0094\3\2\2\2\u0096\u0097\3\2"+
-		"\2\2\u0097\25\3\2\2\2\u0098\u0096\3\2\2\2\u0099\u009a\7\33\2\2\u009a\u00a4"+
-		"\b\f\1\2\u009b\u009c\7\b\2\2\u009c\u009d\5\22\n\2\u009d\u009e\7\t\2\2"+
-		"\u009e\u00a4\3\2\2\2\u009f\u00a0\7\34\2\2\u00a0\u00a4\b\f\1\2\u00a1\u00a2"+
-		"\7\24\2\2\u00a2\u00a4\b\f\1\2\u00a3\u0099\3\2\2\2\u00a3\u009b\3\2\2\2"+
-		"\u00a3\u009f\3\2\2\2\u00a3\u00a1\3\2\2\2\u00a4\27\3\2\2\2\r\34)\66IYb"+
-		"ey\u008c\u0096\u00a3";
+		"\3\u0430\ud6d1\u8206\uad2d\u4417\uaef1\u8d80\uaadd\3 \u00af\4\2\t\2\4"+
+		"\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7\4\b\t\b\4\t\t\t\4\n\t\n\4\13\t"+
+		"\13\4\f\t\f\3\2\3\2\7\2\33\n\2\f\2\16\2\36\13\2\3\2\3\2\3\3\3\3\3\3\3"+
+		"\3\3\3\3\3\3\3\3\3\5\3*\n\3\3\4\3\4\3\4\3\4\3\4\3\4\3\4\3\4\3\4\7\4\65"+
+		"\n\4\f\4\16\48\13\4\3\4\3\4\3\4\3\5\3\5\3\5\3\5\3\5\3\6\3\6\3\6\3\6\3"+
+		"\6\3\6\7\6H\n\6\f\6\16\6K\13\6\3\6\3\6\3\6\3\6\3\6\3\7\3\7\3\7\3\7\3\7"+
+		"\3\7\7\7X\n\7\f\7\16\7[\13\7\3\7\3\7\3\7\3\7\7\7a\n\7\f\7\16\7d\13\7\5"+
+		"\7f\n\7\3\7\3\7\3\7\3\7\3\b\3\b\3\b\3\b\3\b\3\b\3\b\3\b\3\b\3\b\3\b\3"+
+		"\b\7\bx\n\b\f\b\16\b{\13\b\3\b\3\b\3\b\3\b\3\t\3\t\3\t\3\t\3\t\3\n\3\n"+
+		"\3\n\3\n\3\n\7\n\u008b\n\n\f\n\16\n\u008e\13\n\3\n\3\n\3\13\3\13\3\13"+
+		"\3\13\3\13\7\13\u0097\n\13\f\13\16\13\u009a\13\13\3\13\3\13\3\f\3\f\3"+
+		"\f\3\f\3\f\3\f\3\f\3\f\3\f\3\f\3\f\3\f\3\f\3\f\3\f\5\f\u00ad\n\f\3\f\2"+
+		"\2\r\2\4\6\b\n\f\16\20\22\24\26\2\5\3\2\r\22\3\2\3\4\3\2\5\7\u00b6\2\30"+
+		"\3\2\2\2\4)\3\2\2\2\6+\3\2\2\2\b<\3\2\2\2\nA\3\2\2\2\fQ\3\2\2\2\16k\3"+
+		"\2\2\2\20\u0080\3\2\2\2\22\u0085\3\2\2\2\24\u0091\3\2\2\2\26\u00ac\3\2"+
+		"\2\2\30\34\b\2\1\2\31\33\5\4\3\2\32\31\3\2\2\2\33\36\3\2\2\2\34\32\3\2"+
+		"\2\2\34\35\3\2\2\2\35\37\3\2\2\2\36\34\3\2\2\2\37 \b\2\1\2 \3\3\2\2\2"+
+		"!*\7 \2\2\"*\5\6\4\2#$\5\b\5\2$%\7 \2\2%*\3\2\2\2&*\5\n\6\2\'*\5\f\7\2"+
+		"(*\5\16\b\2)!\3\2\2\2)\"\3\2\2\2)#\3\2\2\2)&\3\2\2\2)\'\3\2\2\2)(\3\2"+
+		"\2\2*\5\3\2\2\2+,\7\23\2\2,-\b\4\1\2-.\5\22\n\2.\66\b\4\1\2/\60\7\13\2"+
+		"\2\60\61\b\4\1\2\61\62\5\22\n\2\62\63\b\4\1\2\63\65\3\2\2\2\64/\3\2\2"+
+		"\2\658\3\2\2\2\66\64\3\2\2\2\66\67\3\2\2\2\679\3\2\2\28\66\3\2\2\29:\7"+
+		" \2\2:;\b\4\1\2;\7\3\2\2\2<=\7\36\2\2=>\7\n\2\2>?\5\22\n\2?@\b\5\1\2@"+
+		"\t\3\2\2\2AB\7\25\2\2BC\b\6\1\2CD\5\20\t\2DE\7 \2\2EI\b\6\1\2FH\5\4\3"+
+		"\2GF\3\2\2\2HK\3\2\2\2IG\3\2\2\2IJ\3\2\2\2JL\3\2\2\2KI\3\2\2\2LM\b\6\1"+
+		"\2MN\7\31\2\2NO\7 \2\2OP\b\6\1\2P\13\3\2\2\2QR\7\26\2\2RS\b\7\1\2ST\5"+
+		"\20\t\2TU\7 \2\2UY\b\7\1\2VX\5\4\3\2WV\3\2\2\2X[\3\2\2\2YW\3\2\2\2YZ\3"+
+		"\2\2\2Z\\\3\2\2\2[Y\3\2\2\2\\e\b\7\1\2]^\7\27\2\2^b\7 \2\2_a\5\4\3\2`"+
+		"_\3\2\2\2ad\3\2\2\2b`\3\2\2\2bc\3\2\2\2cf\3\2\2\2db\3\2\2\2e]\3\2\2\2"+
+		"ef\3\2\2\2fg\3\2\2\2gh\b\7\1\2hi\7\31\2\2ij\7 \2\2j\r\3\2\2\2kl\7\30\2"+
+		"\2lm\b\b\1\2mn\5\b\5\2no\7\f\2\2op\b\b\1\2pq\5\20\t\2qr\7\f\2\2rs\b\b"+
+		"\1\2st\5\b\5\2tu\7 \2\2uy\b\b\1\2vx\5\4\3\2wv\3\2\2\2x{\3\2\2\2yw\3\2"+
+		"\2\2yz\3\2\2\2z|\3\2\2\2{y\3\2\2\2|}\b\b\1\2}~\7\31\2\2~\177\7 \2\2\177"+
+		"\17\3\2\2\2\u0080\u0081\5\22\n\2\u0081\u0082\t\2\2\2\u0082\u0083\5\22"+
+		"\n\2\u0083\u0084\b\t\1\2\u0084\21\3\2\2\2\u0085\u008c\5\24\13\2\u0086"+
+		"\u0087\t\3\2\2\u0087\u0088\5\24\13\2\u0088\u0089\b\n\1\2\u0089\u008b\3"+
+		"\2\2\2\u008a\u0086\3\2\2\2\u008b\u008e\3\2\2\2\u008c\u008a\3\2\2\2\u008c"+
+		"\u008d\3\2\2\2\u008d\u008f\3\2\2\2\u008e\u008c\3\2\2\2\u008f\u0090\b\n"+
+		"\1\2\u0090\23\3\2\2\2\u0091\u0098\5\26\f\2\u0092\u0093\t\4\2\2\u0093\u0094"+
+		"\5\26\f\2\u0094\u0095\b\13\1\2\u0095\u0097\3\2\2\2\u0096\u0092\3\2\2\2"+
+		"\u0097\u009a\3\2\2\2\u0098\u0096\3\2\2\2\u0098\u0099\3\2\2\2\u0099\u009b"+
+		"\3\2\2\2\u009a\u0098\3\2\2\2\u009b\u009c\b\13\1\2\u009c\25\3\2\2\2\u009d"+
+		"\u009e\7\35\2\2\u009e\u00ad\b\f\1\2\u009f\u00a0\7\b\2\2\u00a0\u00a1\5"+
+		"\22\n\2\u00a1\u00a2\7\t\2\2\u00a2\u00a3\b\f\1\2\u00a3\u00ad\3\2\2\2\u00a4"+
+		"\u00a5\7\36\2\2\u00a5\u00ad\b\f\1\2\u00a6\u00a7\7\24\2\2\u00a7\u00ad\b"+
+		"\f\1\2\u00a8\u00a9\7\32\2\2\u00a9\u00ad\b\f\1\2\u00aa\u00ab\7\33\2\2\u00ab"+
+		"\u00ad\b\f\1\2\u00ac\u009d\3\2\2\2\u00ac\u009f\3\2\2\2\u00ac\u00a4\3\2"+
+		"\2\2\u00ac\u00a6\3\2\2\2\u00ac\u00a8\3\2\2\2\u00ac\u00aa\3\2\2\2\u00ad"+
+		"\27\3\2\2\2\r\34)\66IYbey\u008c\u0098\u00ac";
 	public static final ATN _ATN =
 		new ATNDeserializer().deserialize(_serializedATN.toCharArray());
 	static {
