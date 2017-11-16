@@ -11,11 +11,12 @@ grammar Dubem;
 {
     private static ArrayList<String> symbol_table;
     private static ArrayList<String> symbol_table_not_used;
+    private static ArrayList<Character> symbol_type;
     private static int count_while = 0;
     private static int count_if = 0;
     private static int count_for = 0;
 
-    private static int stack_cur, stack_max;
+    private static int stack_cur, stack_max, errors;
 
     private static void emit(String bytecode, int delta) {
 	System.out.println("   " + bytecode);
@@ -33,8 +34,11 @@ grammar Dubem;
 
         symbol_table = new ArrayList<String>();
         symbol_table_not_used = new ArrayList<String>();
+        symbol_type = new ArrayList<Character>();
         parser.program();
         //System.out.println("symbols: " + symbol_table);
+        if(errors > 0)
+        	System.exit(1);
     }
 }
 
@@ -101,6 +105,7 @@ program
 		for(int i = 0; i < symbol_table_not_used.size(); i++)
 		{
 			System.err.println("WARNING: nao usou "+symbol_table_not_used.get(i));
+			errors++;
 		}
 
 		System.out.println("  return"); 
@@ -120,18 +125,20 @@ st_print
 	e1 = exp_aritmetic 
 	{
 		if( $e1.type == 'i')
-			emit("invokevirtual java/io/PrintStream/print(I)V\n", -2);
+			emit(" invokevirtual java/io/PrintStream/print(I)V\n", -2);
 		else
-			emit("invokevirtual java/io/PrintStream/print(Ljava/lang/String;)V\n", -2);
+			emit(" invokevirtual java/io/PrintStream/print(Ljava/lang/String;)V\n", -2);
 	}
-	(COMMA { emit("getstatic java/lang/System/out Ljava/io/PrintStream;", +1); } 
-			e2 = exp_aritmetic
-		   { 
-		   		if($e2.type == 'i')
-		   			emit(" invokevirtual java/io/PrintStream/print(I)V\n", -2);
-		   		else
-		   			emit(" invokevirtual java/io/PrintStream/print(Ljava/lang/String;)V\n", -2);
-		    }
+	(
+		COMMA 
+		{ emit("getstatic java/lang/System/out Ljava/io/PrintStream;", +1); } 
+		e2 = exp_aritmetic
+	    { 
+	   		if($e2.type == 'i')
+	   			emit(" invokevirtual java/io/PrintStream/print(I)V\n", -2);
+	   		else
+	   			emit(" invokevirtual java/io/PrintStream/print(Ljava/lang/String;)V\n", -2);
+	    }
 
 	)* NL
 	{
@@ -141,14 +148,35 @@ st_print
 ;
 st_attrib
   : NAME ATTRIB
-  	exp_aritmetic
+  	e1 = exp_aritmetic
   	{
   		if(symbol_table.indexOf($NAME.text) == -1){
   			symbol_table.add($NAME.text);
   			symbol_table_not_used.add($NAME.text);
+
+  			if($e1.type == 'i')
+  				symbol_type.add('i');
+  			else
+  				symbol_type.add('a');
+  		}
+  		else
+  		{
+  			if(symbol_type.get(symbol_table.indexOf($NAME.text)) != $e1.type)
+			{
+				if($e1.type == 'i')
+				{
+					System.err.println("ERROR: "+$NAME.text+" is an string");
+					errors++;//System.exit(1);
+				}
+				else
+				{
+					System.err.println("ERROR: "+$NAME.text+" is an integer");
+					errors++;//System.exit(1);
+				}
+			}
   		}
 
-  		emit("istore "+symbol_table.indexOf($NAME.text), -1);
+		emit(symbol_type.get(symbol_table.indexOf($NAME.text)) + "store " + symbol_table.indexOf($NAME.text), -1);
   	}
 ;
 st_while
@@ -204,8 +232,14 @@ st_for
 	END NL
 ;
 exp_comparison returns [String bytecode]
-	: exp_aritmetic op = ( EQ | NE | LT | LE | GT | GE ) exp_aritmetic
+	: e1 = exp_aritmetic op = ( EQ | NE | LT | LE | GT | GE ) e2 = exp_aritmetic
 	{
+		if($e1.type != $e2.type)
+		{
+			System.err.println("ERROR: cannot mix types");
+			errors++;//System.exit(1);
+		}
+
 		if($op.type == EQ)      $bytecode = "if_icmpne";
 		else if($op.type == NE) $bytecode = "if_icmpeq";
 		else if($op.type == LT) $bytecode = "if_icmpge";
@@ -217,7 +251,13 @@ exp_comparison returns [String bytecode]
 exp_aritmetic returns [char type]
     :   t1 = term ( op = ( PLUS | MINUS ) t2 = term 
 		{ 
-			emit($op.type == PLUS ? "iadd" : "isub", -1);			
+			if($t1.type != $t2.type)
+			{
+				System.err.println("ERROR: cannot mix types");
+				errors++;//System.exit(1);
+			}
+			
+			emit($op.type == PLUS ? "iadd" : "isub", -1);
 		} 
 	)*
 		{ $type = $t1.type; }
@@ -226,8 +266,14 @@ exp_aritmetic returns [char type]
 term returns [char type]  
     :   f1 = factor ( op = ( TIMES  | OVER | REMAINDER) f2 = factor 
 		{ 
+			if($f1.type == 'a' || $f2.type == 'a')
+			{
+				System.err.println("ERROR: cannot mix types");
+				errors++;//System.exit(1);
+			}
+
 			emit($op.type == TIMES ? "imul" :
-			($op.type == OVER ? "idiv": "irem"), -1); 
+			($op.type == OVER ? "idiv": "irem"), -1);
 		} 
 	)*
 	{ $type = $f1.type; }
@@ -235,7 +281,7 @@ term returns [char type]
 factor returns [char type]
     :   NUMBER
         	{ 
-        		emit(" ldc " + $NUMBER.text, +1); 
+        		emit(" ldc " + $NUMBER.text, +1);
         		$type = 'i';
         	}
     |	OPEN_P exp_aritmetic CLOSE_P
@@ -245,14 +291,14 @@ factor returns [char type]
     |   NAME
     		{
     		    if(symbol_table.indexOf($NAME.text) >= 0){
-    				emit(" iload "+symbol_table.indexOf($NAME.text), +1);
+    				emit(" " + symbol_type.get(symbol_table.indexOf($NAME.text)) + "load " + symbol_table.indexOf($NAME.text), +1);
     				symbol_table_not_used.remove($NAME.text); //removendo
-    				$type = 'i';
+    				$type = symbol_type.get(symbol_table.indexOf($NAME.text));
     			}
     			else
 				{	
 					System.err.println("WARNING: Used non declared variable "+$NAME.text);
-					System.exit(1);
+					errors++;//System.exit(1);
 				}
     		}
     |   READ_INT
@@ -262,7 +308,7 @@ factor returns [char type]
     		}
     |   READ_STRING
     		{
-    			$type = 'a';
+				$type = 'a';
     		}
     |   STRING
 	    	{

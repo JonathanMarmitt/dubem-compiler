@@ -81,11 +81,12 @@ public class DubemLexer extends Lexer {
 
 	    private static ArrayList<String> symbol_table;
 	    private static ArrayList<String> symbol_table_not_used;
+	    private static ArrayList<Character> symbol_type;
 	    private static int count_while = 0;
 	    private static int count_if = 0;
 	    private static int count_for = 0;
 
-	    private static int stack_cur, stack_max;
+	    private static int stack_cur, stack_max, errors;
 
 	    private static void emit(String bytecode, int delta) {
 		System.out.println("   " + bytecode);
@@ -103,8 +104,11 @@ public class DubemLexer extends Lexer {
 
 	        symbol_table = new ArrayList<String>();
 	        symbol_table_not_used = new ArrayList<String>();
+	        symbol_type = new ArrayList<Character>();
 	        parser.program();
 	        //System.out.println("symbols: " + symbol_table);
+	        if(errors > 0)
+	        	System.exit(1);
 	    }
 
 

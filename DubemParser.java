@@ -91,11 +91,12 @@ public class DubemParser extends Parser {
 
 	    private static ArrayList<String> symbol_table;
 	    private static ArrayList<String> symbol_table_not_used;
+	    private static ArrayList<Character> symbol_type;
 	    private static int count_while = 0;
 	    private static int count_if = 0;
 	    private static int count_for = 0;
 
-	    private static int stack_cur, stack_max;
+	    private static int stack_cur, stack_max, errors;
 
 	    private static void emit(String bytecode, int delta) {
 		System.out.println("   " + bytecode);
@@ -113,8 +114,11 @@ public class DubemParser extends Parser {
 
 	        symbol_table = new ArrayList<String>();
 	        symbol_table_not_used = new ArrayList<String>();
+	        symbol_type = new ArrayList<Character>();
 	        parser.program();
 	        //System.out.println("symbols: " + symbol_table);
+	        if(errors > 0)
+	        	System.exit(1);
 	    }
 
 	public DubemParser(TokenStream input) {
@@ -181,6 +185,7 @@ public class DubemParser extends Parser {
 					for(int i = 0; i < symbol_table_not_used.size(); i++)
 					{
 						System.err.println("WARNING: nao usou "+symbol_table_not_used.get(i));
+						errors++;
 					}
 
 					System.out.println("  return"); 
@@ -342,9 +347,9 @@ public class DubemParser extends Parser {
 			((St_printContext)_localctx).e1 = exp_aritmetic();
 
 					if( ((St_printContext)_localctx).e1.type == 'i')
-						emit("invokevirtual java/io/PrintStream/print(I)V\n", -2);
+						emit(" invokevirtual java/io/PrintStream/print(I)V\n", -2);
 					else
-						emit("invokevirtual java/io/PrintStream/print(Ljava/lang/String;)V\n", -2);
+						emit(" invokevirtual java/io/PrintStream/print(Ljava/lang/String;)V\n", -2);
 				
 			setState(52);
 			_errHandler.sync(this);
@@ -358,11 +363,11 @@ public class DubemParser extends Parser {
 				setState(47);
 				((St_printContext)_localctx).e2 = exp_aritmetic();
 				 
-						   		if(((St_printContext)_localctx).e2.type == 'i')
-						   			emit(" invokevirtual java/io/PrintStream/print(I)V\n", -2);
-						   		else
-						   			emit(" invokevirtual java/io/PrintStream/print(Ljava/lang/String;)V\n", -2);
-						    
+					   		if(((St_printContext)_localctx).e2.type == 'i')
+					   			emit(" invokevirtual java/io/PrintStream/print(I)V\n", -2);
+					   		else
+					   			emit(" invokevirtual java/io/PrintStream/print(Ljava/lang/String;)V\n", -2);
+					    
 				}
 				}
 				setState(54);
@@ -390,6 +395,7 @@ public class DubemParser extends Parser {
 
 	public static class St_attribContext extends ParserRuleContext {
 		public Token NAME;
+		public Exp_aritmeticContext e1;
 		public TerminalNode NAME() { return getToken(DubemParser.NAME, 0); }
 		public TerminalNode ATTRIB() { return getToken(DubemParser.ATTRIB, 0); }
 		public Exp_aritmeticContext exp_aritmetic() {
@@ -420,14 +426,35 @@ public class DubemParser extends Parser {
 			setState(59);
 			match(ATTRIB);
 			setState(60);
-			exp_aritmetic();
+			((St_attribContext)_localctx).e1 = exp_aritmetic();
 
 			  		if(symbol_table.indexOf((((St_attribContext)_localctx).NAME!=null?((St_attribContext)_localctx).NAME.getText():null)) == -1){
 			  			symbol_table.add((((St_attribContext)_localctx).NAME!=null?((St_attribContext)_localctx).NAME.getText():null));
 			  			symbol_table_not_used.add((((St_attribContext)_localctx).NAME!=null?((St_attribContext)_localctx).NAME.getText():null));
+
+			  			if(((St_attribContext)_localctx).e1.type == 'i')
+			  				symbol_type.add('i');
+			  			else
+			  				symbol_type.add('a');
+			  		}
+			  		else
+			  		{
+			  			if(symbol_type.get(symbol_table.indexOf((((St_attribContext)_localctx).NAME!=null?((St_attribContext)_localctx).NAME.getText():null))) != ((St_attribContext)_localctx).e1.type)
+						{
+							if(((St_attribContext)_localctx).e1.type == 'i')
+							{
+								System.err.println("ERROR: "+(((St_attribContext)_localctx).NAME!=null?((St_attribContext)_localctx).NAME.getText():null)+" is an string");
+								errors++;//System.exit(1);
+							}
+							else
+							{
+								System.err.println("ERROR: "+(((St_attribContext)_localctx).NAME!=null?((St_attribContext)_localctx).NAME.getText():null)+" is an integer");
+								errors++;//System.exit(1);
+							}
+						}
 			  		}
 
-			  		emit("istore "+symbol_table.indexOf((((St_attribContext)_localctx).NAME!=null?((St_attribContext)_localctx).NAME.getText():null)), -1);
+					emit(symbol_type.get(symbol_table.indexOf((((St_attribContext)_localctx).NAME!=null?((St_attribContext)_localctx).NAME.getText():null))) + "store " + symbol_table.indexOf((((St_attribContext)_localctx).NAME!=null?((St_attribContext)_localctx).NAME.getText():null)), -1);
 			  	
 			}
 		}
@@ -744,7 +771,9 @@ public class DubemParser extends Parser {
 
 	public static class Exp_comparisonContext extends ParserRuleContext {
 		public String bytecode;
+		public Exp_aritmeticContext e1;
 		public Token op;
+		public Exp_aritmeticContext e2;
 		public List<Exp_aritmeticContext> exp_aritmetic() {
 			return getRuleContexts(Exp_aritmeticContext.class);
 		}
@@ -779,7 +808,7 @@ public class DubemParser extends Parser {
 			enterOuterAlt(_localctx, 1);
 			{
 			setState(126);
-			exp_aritmetic();
+			((Exp_comparisonContext)_localctx).e1 = exp_aritmetic();
 			setState(127);
 			((Exp_comparisonContext)_localctx).op = _input.LT(1);
 			_la = _input.LA(1);
@@ -789,7 +818,13 @@ public class DubemParser extends Parser {
 				consume();
 			}
 			setState(128);
-			exp_aritmetic();
+			((Exp_comparisonContext)_localctx).e2 = exp_aritmetic();
+
+					if(((Exp_comparisonContext)_localctx).e1.type != ((Exp_comparisonContext)_localctx).e2.type)
+					{
+						System.err.println("ERROR: cannot mix types");
+						errors++;//System.exit(1);
+					}
 
 					if((((Exp_comparisonContext)_localctx).op!=null?((Exp_comparisonContext)_localctx).op.getType():0) == EQ)      ((Exp_comparisonContext)_localctx).bytecode =  "if_icmpne";
 					else if((((Exp_comparisonContext)_localctx).op!=null?((Exp_comparisonContext)_localctx).op.getType():0) == NE) ((Exp_comparisonContext)_localctx).bytecode =  "if_icmpeq";
@@ -870,7 +905,13 @@ public class DubemParser extends Parser {
 				setState(133);
 				((Exp_aritmeticContext)_localctx).t2 = term();
 				 
-							emit((((Exp_aritmeticContext)_localctx).op!=null?((Exp_aritmeticContext)_localctx).op.getType():0) == PLUS ? "iadd" : "isub", -1);			
+							if(((Exp_aritmeticContext)_localctx).t1.type != ((Exp_aritmeticContext)_localctx).t2.type)
+							{
+								System.err.println("ERROR: cannot mix types");
+								errors++;//System.exit(1);
+							}
+							
+							emit((((Exp_aritmeticContext)_localctx).op!=null?((Exp_aritmeticContext)_localctx).op.getType():0) == PLUS ? "iadd" : "isub", -1);
 						
 				}
 				}
@@ -955,8 +996,14 @@ public class DubemParser extends Parser {
 				setState(145);
 				((TermContext)_localctx).f2 = factor();
 				 
+							if(((TermContext)_localctx).f1.type == 'a' || ((TermContext)_localctx).f2.type == 'a')
+							{
+								System.err.println("ERROR: cannot mix types");
+								errors++;//System.exit(1);
+							}
+
 							emit((((TermContext)_localctx).op!=null?((TermContext)_localctx).op.getType():0) == TIMES ? "imul" :
-							((((TermContext)_localctx).op!=null?((TermContext)_localctx).op.getType():0) == OVER ? "idiv": "irem"), -1); 
+							((((TermContext)_localctx).op!=null?((TermContext)_localctx).op.getType():0) == OVER ? "idiv": "irem"), -1);
 						
 				}
 				}
@@ -1020,7 +1067,7 @@ public class DubemParser extends Parser {
 				setState(155);
 				((FactorContext)_localctx).NUMBER = match(NUMBER);
 				 
-				        		emit(" ldc " + (((FactorContext)_localctx).NUMBER!=null?((FactorContext)_localctx).NUMBER.getText():null), +1); 
+				        		emit(" ldc " + (((FactorContext)_localctx).NUMBER!=null?((FactorContext)_localctx).NUMBER.getText():null), +1);
 				        		((FactorContext)_localctx).type =  'i';
 				        	
 				}
@@ -1046,14 +1093,14 @@ public class DubemParser extends Parser {
 				((FactorContext)_localctx).NAME = match(NAME);
 
 				    		    if(symbol_table.indexOf((((FactorContext)_localctx).NAME!=null?((FactorContext)_localctx).NAME.getText():null)) >= 0){
-				    				emit(" iload "+symbol_table.indexOf((((FactorContext)_localctx).NAME!=null?((FactorContext)_localctx).NAME.getText():null)), +1);
+				    				emit(" " + symbol_type.get(symbol_table.indexOf((((FactorContext)_localctx).NAME!=null?((FactorContext)_localctx).NAME.getText():null))) + "load " + symbol_table.indexOf((((FactorContext)_localctx).NAME!=null?((FactorContext)_localctx).NAME.getText():null)), +1);
 				    				symbol_table_not_used.remove((((FactorContext)_localctx).NAME!=null?((FactorContext)_localctx).NAME.getText():null)); //removendo
-				    				((FactorContext)_localctx).type =  'i';
+				    				((FactorContext)_localctx).type =  symbol_type.get(symbol_table.indexOf((((FactorContext)_localctx).NAME!=null?((FactorContext)_localctx).NAME.getText():null)));
 				    			}
 				    			else
 								{	
 									System.err.println("WARNING: Used non declared variable "+(((FactorContext)_localctx).NAME!=null?((FactorContext)_localctx).NAME.getText():null));
-									System.exit(1);
+									errors++;//System.exit(1);
 								}
 				    		
 				}
@@ -1075,7 +1122,7 @@ public class DubemParser extends Parser {
 				setState(166);
 				match(READ_STRING);
 
-				    			((FactorContext)_localctx).type =  'a';
+								((FactorContext)_localctx).type =  'a';
 				    		
 				}
 				break;
