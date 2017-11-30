@@ -37,6 +37,7 @@ grammar Dubem;
         symbol_type = new ArrayList<Character>();
         parser.program();
         //System.out.println("symbols: " + symbol_table);
+        
         if(errors > 0)
         	System.exit(1);
     }
@@ -54,6 +55,8 @@ CLOSE_P		: ')' ;
 ATTRIB      : '=' ;
 COMMA       : ',' ;
 SEMICOLON   : ';' ;
+OPEN_B      : '[' ;
+CLOSE_B     : ']' ;
 
 EQ          : '==';
 NE          : '!=';
@@ -61,6 +64,9 @@ LT          : '<' ;
 LE          : '<=';
 GT          : '>' ;
 GE          : '>=';
+
+ARRAY       : 'array';
+LENGTH      : 'length';
 
 PRINT		: 'print';
 READ_INT    : 'read_int';
@@ -147,37 +153,59 @@ st_print
 	}
 ;
 st_attrib
-  : NAME ATTRIB
-  	e1 = exp_aritmetic
-  	{
-  		if(symbol_table.indexOf($NAME.text) == -1){
+  : NAME 
+	    { boolean isarray = false; }
+  	(
+  	 	{
+			isarray = true;
+			emit(' aload '+symbol_table.indexOf($NAME.text), 1);
+		} 
+  		OPEN_B e1 = exp_aritmetic CLOSE_B 
+	)?
+  	ATTRIB
+  	(e2 = exp_aritmetic
+	  	{
+	  		if(symbol_table.indexOf($NAME.text) == -1){
+	  			symbol_table.add($NAME.text);
+	  			symbol_table_not_used.add($NAME.text);
+
+	  			if($e1.type == 'i')
+	  				symbol_type.add('i');
+	  			else
+	  				symbol_type.add('a');
+	  		}
+	  		else
+	  		{
+	  			if(symbol_type.get(symbol_table.indexOf($NAME.text)) != $e2.type)
+				{
+					if($e2.type == 'i')
+					{
+						System.err.println("ERROR: "+$NAME.text+" is an string");
+						errors++;
+					}
+					else
+					{
+						System.err.println("ERROR: "+$NAME.text+" is an integer");
+						errors++;
+					}
+				}
+	  		}
+
+	  		if(isarray)
+	  			emit(" iastore ".symbol_table.indexOf($NAME.text), -3);
+	  		else
+				emit(symbol_type.get(symbol_table.indexOf($NAME.text)) + "store " + symbol_table.indexOf($NAME.text), -1);
+	  	}
+	|
+		ARRAY exp_aritmetic
+		{
   			symbol_table.add($NAME.text);
-  			symbol_table_not_used.add($NAME.text);
+  			symbol_type.add('v');
 
-  			if($e1.type == 'i')
-  				symbol_type.add('i');
-  			else
-  				symbol_type.add('a');
-  		}
-  		else
-  		{
-  			if(symbol_type.get(symbol_table.indexOf($NAME.text)) != $e1.type)
-			{
-				if($e1.type == 'i')
-				{
-					System.err.println("ERROR: "+$NAME.text+" is an string");
-					errors++;//System.exit(1);
-				}
-				else
-				{
-					System.err.println("ERROR: "+$NAME.text+" is an integer");
-					errors++;//System.exit(1);
-				}
-			}
-  		}
-
-		emit(symbol_type.get(symbol_table.indexOf($NAME.text)) + "store " + symbol_table.indexOf($NAME.text), -1);
-  	}
+  			emit(" newarray int", 0);
+  			emit(" astore "+symbol_table.indexOf($NAME.text), -1);
+		}
+  	)
 ;
 st_while
   	: WHILE 
@@ -269,7 +297,7 @@ term returns [char type]
 			if($f1.type == 'a' || $f2.type == 'a')
 			{
 				System.err.println("ERROR: cannot mix types");
-				errors++;//System.exit(1);
+				errors++;
 			}
 
 			emit($op.type == TIMES ? "imul" :
@@ -288,19 +316,21 @@ factor returns [char type]
 	    	{
 	    		$type = $exp_aritmetic.type;
 	    	}
-    |   NAME
+    |   NAME 
+    	( OPEN_B
     		{
     		    if(symbol_table.indexOf($NAME.text) >= 0){
     				emit(" " + symbol_type.get(symbol_table.indexOf($NAME.text)) + "load " + symbol_table.indexOf($NAME.text), +1);
-    				symbol_table_not_used.remove($NAME.text); //removendo
+    				symbol_table_not_used.remove($NAME.text);
     				$type = symbol_type.get(symbol_table.indexOf($NAME.text));
     			}
     			else
 				{	
 					System.err.println("WARNING: Used non declared variable "+$NAME.text);
-					errors++;//System.exit(1);
+					errors++;
 				}
     		}
+    	CLOSE_B )?
     |   READ_INT
     		{ 
     			emit(" invokestatic Runtime/readInt()I", +1);
@@ -315,4 +345,9 @@ factor returns [char type]
 	    		emit(" ldc " + $STRING.text, +1); 
 	        	$type = 'a';
 	    	}
+	|   LENGTH NAME
+			{
+				emit(" aload "symbol_table.indexOf($NAME.text), 1);
+				emit(" arraylength", 0);
+			}
 ;
