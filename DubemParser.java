@@ -20,28 +20,33 @@ public class DubemParser extends Parser {
 		new PredictionContextCache();
 	public static final int
 		PLUS=1, MINUS=2, TIMES=3, OVER=4, REMAINDER=5, OPEN_P=6, CLOSE_P=7, ATTRIB=8, 
-		COMMA=9, SEMICOLON=10, EQ=11, NE=12, LT=13, LE=14, GT=15, GE=16, PRINT=17, 
-		READ_INT=18, WHILE=19, IF=20, ELSE=21, FOR=22, END=23, READ_STRING=24, 
-		STRING=25, COMMENT=26, NUMBER=27, NAME=28, SPACE=29, NL=30;
+		COMMA=9, SEMICOLON=10, OPEN_B=11, CLOSE_B=12, EQ=13, NE=14, LT=15, LE=16, 
+		GT=17, GE=18, ARRAY=19, LENGTH=20, PROCEDURE=21, PRINT=22, READ_INT=23, 
+		WHILE=24, IF=25, ELSE=26, FOR=27, END=28, READ_STRING=29, STRING=30, COMMENT=31, 
+		NUMBER=32, NAME=33, SPACE=34, NL=35;
 	public static final int
-		RULE_program = 0, RULE_statement = 1, RULE_st_print = 2, RULE_st_attrib = 3, 
-		RULE_st_while = 4, RULE_st_if = 5, RULE_st_for = 6, RULE_exp_comparison = 7, 
-		RULE_exp_aritmetic = 8, RULE_term = 9, RULE_factor = 10;
+		RULE_program = 0, RULE_procedure = 1, RULE_main = 2, RULE_statement = 3, 
+		RULE_st_print = 4, RULE_st_attrib = 5, RULE_st_while = 6, RULE_st_if = 7, 
+		RULE_st_for = 8, RULE_st_call = 9, RULE_exp_comparison = 10, RULE_exp_aritmetic = 11, 
+		RULE_term = 12, RULE_factor = 13;
 	public static final String[] ruleNames = {
-		"program", "statement", "st_print", "st_attrib", "st_while", "st_if", 
-		"st_for", "exp_comparison", "exp_aritmetic", "term", "factor"
+		"program", "procedure", "main", "statement", "st_print", "st_attrib", 
+		"st_while", "st_if", "st_for", "st_call", "exp_comparison", "exp_aritmetic", 
+		"term", "factor"
 	};
 
 	private static final String[] _LITERAL_NAMES = {
 		null, "'+'", "'-'", "'*'", "'/'", "'%'", "'('", "')'", "'='", "','", "';'", 
-		"'=='", "'!='", "'<'", "'<='", "'>'", "'>='", "'print'", "'read_int'", 
-		"'while'", "'if'", "'else'", "'for'", "'end'", "'read_string'"
+		"'['", "']'", "'=='", "'!='", "'<'", "'<='", "'>'", "'>='", "'array'", 
+		"'length'", "'procedure'", "'print'", "'read_int'", "'while'", "'if'", 
+		"'else'", "'for'", "'end'", "'read_string'"
 	};
 	private static final String[] _SYMBOLIC_NAMES = {
 		null, "PLUS", "MINUS", "TIMES", "OVER", "REMAINDER", "OPEN_P", "CLOSE_P", 
-		"ATTRIB", "COMMA", "SEMICOLON", "EQ", "NE", "LT", "LE", "GT", "GE", "PRINT", 
-		"READ_INT", "WHILE", "IF", "ELSE", "FOR", "END", "READ_STRING", "STRING", 
-		"COMMENT", "NUMBER", "NAME", "SPACE", "NL"
+		"ATTRIB", "COMMA", "SEMICOLON", "OPEN_B", "CLOSE_B", "EQ", "NE", "LT", 
+		"LE", "GT", "GE", "ARRAY", "LENGTH", "PROCEDURE", "PRINT", "READ_INT", 
+		"WHILE", "IF", "ELSE", "FOR", "END", "READ_STRING", "STRING", "COMMENT", 
+		"NUMBER", "NAME", "SPACE", "NL"
 	};
 	public static final Vocabulary VOCABULARY = new VocabularyImpl(_LITERAL_NAMES, _SYMBOLIC_NAMES);
 
@@ -117,6 +122,7 @@ public class DubemParser extends Parser {
 	        symbol_type = new ArrayList<Character>();
 	        parser.program();
 	        //System.out.println("symbols: " + symbol_table);
+	        
 	        if(errors > 0)
 	        	System.exit(1);
 	    }
@@ -126,11 +132,18 @@ public class DubemParser extends Parser {
 		_interp = new ParserATNSimulator(this,_ATN,_decisionToDFA,_sharedContextCache);
 	}
 	public static class ProgramContext extends ParserRuleContext {
-		public List<StatementContext> statement() {
-			return getRuleContexts(StatementContext.class);
+		public MainContext main() {
+			return getRuleContext(MainContext.class,0);
 		}
-		public StatementContext statement(int i) {
-			return getRuleContext(StatementContext.class,i);
+		public List<ProcedureContext> procedure() {
+			return getRuleContexts(ProcedureContext.class);
+		}
+		public ProcedureContext procedure(int i) {
+			return getRuleContext(ProcedureContext.class,i);
+		}
+		public List<TerminalNode> NL() { return getTokens(DubemParser.NL); }
+		public TerminalNode NL(int i) {
+			return getToken(DubemParser.NL, i);
 		}
 		public ProgramContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
@@ -149,11 +162,11 @@ public class DubemParser extends Parser {
 	public final ProgramContext program() throws RecognitionException {
 		ProgramContext _localctx = new ProgramContext(_ctx, getState());
 		enterRule(_localctx, 0, RULE_program);
-		int _la;
 		try {
+			int _alt;
 			enterOuterAlt(_localctx, 1);
 			{
-			 
+
 					System.out.println(".source Test.j");
 					System.out.println(".class public Test"); 
 					System.out.println(".super  java/lang/Object"); 
@@ -161,23 +174,194 @@ public class DubemParser extends Parser {
 					System.out.println("aload_0");
 					System.out.println("invokenonvirtual java/lang/Object/<init>()V");
 					System.out.println("return");
-					System.out.println(".end method");
-					System.out.println(".method public static main([Ljava/lang/String;)V");
-					
-
-
+					System.out.println(".end method\n\n");
 				
-			setState(26);
+			setState(33);
+			_errHandler.sync(this);
+			_alt = getInterpreter().adaptivePredict(_input,1,_ctx);
+			while ( _alt!=2 && _alt!=org.antlr.v4.runtime.atn.ATN.INVALID_ALT_NUMBER ) {
+				if ( _alt==1 ) {
+					{
+					setState(31);
+					switch (_input.LA(1)) {
+					case PROCEDURE:
+						{
+						setState(29);
+						procedure();
+						}
+						break;
+					case NL:
+						{
+						setState(30);
+						match(NL);
+						}
+						break;
+					default:
+						throw new NoViableAltException(this);
+					}
+					} 
+				}
+				setState(35);
+				_errHandler.sync(this);
+				_alt = getInterpreter().adaptivePredict(_input,1,_ctx);
+			}
+			setState(36);
+			main();
+			}
+		}
+		catch (RecognitionException re) {
+			_localctx.exception = re;
+			_errHandler.reportError(this, re);
+			_errHandler.recover(this, re);
+		}
+		finally {
+			exitRule();
+		}
+		return _localctx;
+	}
+
+	public static class ProcedureContext extends ParserRuleContext {
+		public Token NAME;
+		public TerminalNode PROCEDURE() { return getToken(DubemParser.PROCEDURE, 0); }
+		public TerminalNode NAME() { return getToken(DubemParser.NAME, 0); }
+		public TerminalNode OPEN_P() { return getToken(DubemParser.OPEN_P, 0); }
+		public TerminalNode CLOSE_P() { return getToken(DubemParser.CLOSE_P, 0); }
+		public List<TerminalNode> NL() { return getTokens(DubemParser.NL); }
+		public TerminalNode NL(int i) {
+			return getToken(DubemParser.NL, i);
+		}
+		public TerminalNode END() { return getToken(DubemParser.END, 0); }
+		public List<StatementContext> statement() {
+			return getRuleContexts(StatementContext.class);
+		}
+		public StatementContext statement(int i) {
+			return getRuleContext(StatementContext.class,i);
+		}
+		public ProcedureContext(ParserRuleContext parent, int invokingState) {
+			super(parent, invokingState);
+		}
+		@Override public int getRuleIndex() { return RULE_procedure; }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof DubemListener ) ((DubemListener)listener).enterProcedure(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof DubemListener ) ((DubemListener)listener).exitProcedure(this);
+		}
+	}
+
+	public final ProcedureContext procedure() throws RecognitionException {
+		ProcedureContext _localctx = new ProcedureContext(_ctx, getState());
+		enterRule(_localctx, 2, RULE_procedure);
+		int _la;
+		try {
+			enterOuterAlt(_localctx, 1);
+			{
+			setState(38);
+			match(PROCEDURE);
+			setState(39);
+			((ProcedureContext)_localctx).NAME = match(NAME);
+			setState(40);
+			match(OPEN_P);
+			setState(41);
+			match(CLOSE_P);
+			setState(42);
+			match(NL);
+
+					System.out.println(".method public static "+(((ProcedureContext)_localctx).NAME!=null?((ProcedureContext)_localctx).NAME.getText():null)+"()V");
+				
+			setState(47);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
 			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << PRINT) | (1L << WHILE) | (1L << IF) | (1L << FOR) | (1L << NAME) | (1L << NL))) != 0)) {
 				{
 				{
-				setState(23);
+				setState(44);
 				statement();
 				}
 				}
-				setState(28);
+				setState(49);
+				_errHandler.sync(this);
+				_la = _input.LA(1);
+			}
+			setState(50);
+			match(END);
+			setState(51);
+			match(NL);
+
+					for(int i = 0; i < symbol_table_not_used.size(); i++)
+					{
+						System.err.println("WARNING: nao usou "+symbol_table_not_used.get(i));
+						//errors++;
+					}
+
+					System.out.println("  return");
+					System.out.println(".limit stack"+ " " + stack_max);
+					System.out.println(".limit locals"+ " " + symbol_table.size()+1);
+					System.out.println(".end method\n\n");
+					
+					symbol_table.clear();
+					symbol_table_not_used.clear();
+					symbol_type.clear();
+					stack_max = 0;
+					stack_cur = 0;
+				
+			}
+		}
+		catch (RecognitionException re) {
+			_localctx.exception = re;
+			_errHandler.reportError(this, re);
+			_errHandler.recover(this, re);
+		}
+		finally {
+			exitRule();
+		}
+		return _localctx;
+	}
+
+	public static class MainContext extends ParserRuleContext {
+		public List<StatementContext> statement() {
+			return getRuleContexts(StatementContext.class);
+		}
+		public StatementContext statement(int i) {
+			return getRuleContext(StatementContext.class,i);
+		}
+		public MainContext(ParserRuleContext parent, int invokingState) {
+			super(parent, invokingState);
+		}
+		@Override public int getRuleIndex() { return RULE_main; }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof DubemListener ) ((DubemListener)listener).enterMain(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof DubemListener ) ((DubemListener)listener).exitMain(this);
+		}
+	}
+
+	public final MainContext main() throws RecognitionException {
+		MainContext _localctx = new MainContext(_ctx, getState());
+		enterRule(_localctx, 4, RULE_main);
+		int _la;
+		try {
+			enterOuterAlt(_localctx, 1);
+			{
+
+					System.out.println(".method public static main([Ljava/lang/String;)V");
+				
+			setState(58);
+			_errHandler.sync(this);
+			_la = _input.LA(1);
+			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << PRINT) | (1L << WHILE) | (1L << IF) | (1L << FOR) | (1L << NAME) | (1L << NL))) != 0)) {
+				{
+				{
+				setState(55);
+				statement();
+				}
+				}
+				setState(60);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 			}
@@ -185,7 +369,7 @@ public class DubemParser extends Parser {
 					for(int i = 0; i < symbol_table_not_used.size(); i++)
 					{
 						System.err.println("WARNING: nao usou "+symbol_table_not_used.get(i));
-						errors++;
+						//errors++;
 					}
 
 					System.out.println("  return"); 
@@ -223,6 +407,9 @@ public class DubemParser extends Parser {
 		public St_forContext st_for() {
 			return getRuleContext(St_forContext.class,0);
 		}
+		public St_callContext st_call() {
+			return getRuleContext(St_callContext.class,0);
+		}
 		public StatementContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
@@ -239,56 +426,62 @@ public class DubemParser extends Parser {
 
 	public final StatementContext statement() throws RecognitionException {
 		StatementContext _localctx = new StatementContext(_ctx, getState());
-		enterRule(_localctx, 2, RULE_statement);
+		enterRule(_localctx, 6, RULE_statement);
 		try {
-			setState(39);
-			switch (_input.LA(1)) {
-			case NL:
+			setState(72);
+			_errHandler.sync(this);
+			switch ( getInterpreter().adaptivePredict(_input,4,_ctx) ) {
+			case 1:
 				enterOuterAlt(_localctx, 1);
 				{
-				setState(31);
+				setState(63);
 				match(NL);
 				}
 				break;
-			case PRINT:
+			case 2:
 				enterOuterAlt(_localctx, 2);
 				{
-				setState(32);
+				setState(64);
 				st_print();
 				}
 				break;
-			case NAME:
+			case 3:
 				enterOuterAlt(_localctx, 3);
 				{
-				setState(33);
+				setState(65);
 				st_attrib();
-				setState(34);
+				setState(66);
 				match(NL);
 				}
 				break;
-			case WHILE:
+			case 4:
 				enterOuterAlt(_localctx, 4);
 				{
-				setState(36);
+				setState(68);
 				st_while();
 				}
 				break;
-			case IF:
+			case 5:
 				enterOuterAlt(_localctx, 5);
 				{
-				setState(37);
+				setState(69);
 				st_if();
 				}
 				break;
-			case FOR:
+			case 6:
 				enterOuterAlt(_localctx, 6);
 				{
-				setState(38);
+				setState(70);
 				st_for();
 				}
 				break;
-			default:
-				throw new NoViableAltException(this);
+			case 7:
+				enterOuterAlt(_localctx, 7);
+				{
+				setState(71);
+				st_call();
+				}
+				break;
 			}
 		}
 		catch (RecognitionException re) {
@@ -333,17 +526,17 @@ public class DubemParser extends Parser {
 
 	public final St_printContext st_print() throws RecognitionException {
 		St_printContext _localctx = new St_printContext(_ctx, getState());
-		enterRule(_localctx, 4, RULE_st_print);
+		enterRule(_localctx, 8, RULE_st_print);
 		int _la;
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(41);
+			setState(74);
 			match(PRINT);
 
 					emit("getstatic java/lang/System/out Ljava/io/PrintStream;", +1);
 				
-			setState(43);
+			setState(76);
 			((St_printContext)_localctx).e1 = exp_aritmetic();
 
 					if( ((St_printContext)_localctx).e1.type == 'i')
@@ -351,16 +544,16 @@ public class DubemParser extends Parser {
 					else
 						emit(" invokevirtual java/io/PrintStream/print(Ljava/lang/String;)V\n", -2);
 				
-			setState(52);
+			setState(85);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
 			while (_la==COMMA) {
 				{
 				{
-				setState(45);
+				setState(78);
 				match(COMMA);
 				 emit("getstatic java/lang/System/out Ljava/io/PrintStream;", +1); 
-				setState(47);
+				setState(80);
 				((St_printContext)_localctx).e2 = exp_aritmetic();
 				 
 					   		if(((St_printContext)_localctx).e2.type == 'i')
@@ -370,11 +563,11 @@ public class DubemParser extends Parser {
 					    
 				}
 				}
-				setState(54);
+				setState(87);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 			}
-			setState(55);
+			setState(88);
 			match(NL);
 
 					emit("getstatic java/lang/System/out Ljava/io/PrintStream;", +1);
@@ -396,11 +589,18 @@ public class DubemParser extends Parser {
 	public static class St_attribContext extends ParserRuleContext {
 		public Token NAME;
 		public Exp_aritmeticContext e1;
+		public Exp_aritmeticContext e2;
 		public TerminalNode NAME() { return getToken(DubemParser.NAME, 0); }
 		public TerminalNode ATTRIB() { return getToken(DubemParser.ATTRIB, 0); }
-		public Exp_aritmeticContext exp_aritmetic() {
-			return getRuleContext(Exp_aritmeticContext.class,0);
+		public TerminalNode ARRAY() { return getToken(DubemParser.ARRAY, 0); }
+		public List<Exp_aritmeticContext> exp_aritmetic() {
+			return getRuleContexts(Exp_aritmeticContext.class);
 		}
+		public Exp_aritmeticContext exp_aritmetic(int i) {
+			return getRuleContext(Exp_aritmeticContext.class,i);
+		}
+		public TerminalNode OPEN_B() { return getToken(DubemParser.OPEN_B, 0); }
+		public TerminalNode CLOSE_B() { return getToken(DubemParser.CLOSE_B, 0); }
 		public St_attribContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
@@ -417,45 +617,97 @@ public class DubemParser extends Parser {
 
 	public final St_attribContext st_attrib() throws RecognitionException {
 		St_attribContext _localctx = new St_attribContext(_ctx, getState());
-		enterRule(_localctx, 6, RULE_st_attrib);
+		enterRule(_localctx, 10, RULE_st_attrib);
+		int _la;
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(58);
+			setState(91);
 			((St_attribContext)_localctx).NAME = match(NAME);
-			setState(59);
+			 boolean isarray = false; 
+			setState(98);
+			_la = _input.LA(1);
+			if (_la==OPEN_B) {
+				{
+
+							isarray = true;
+							emit(" aload "+symbol_table.indexOf((((St_attribContext)_localctx).NAME!=null?((St_attribContext)_localctx).NAME.getText():null)), 1);
+						
+				setState(94);
+				match(OPEN_B);
+				setState(95);
+				((St_attribContext)_localctx).e1 = exp_aritmetic();
+				setState(96);
+				match(CLOSE_B);
+				}
+			}
+
+			setState(100);
 			match(ATTRIB);
-			setState(60);
-			((St_attribContext)_localctx).e1 = exp_aritmetic();
+			setState(108);
+			switch (_input.LA(1)) {
+			case OPEN_P:
+			case LENGTH:
+			case READ_INT:
+			case READ_STRING:
+			case STRING:
+			case NUMBER:
+			case NAME:
+				{
+				setState(101);
+				((St_attribContext)_localctx).e2 = exp_aritmetic();
 
-			  		if(symbol_table.indexOf((((St_attribContext)_localctx).NAME!=null?((St_attribContext)_localctx).NAME.getText():null)) == -1){
-			  			symbol_table.add((((St_attribContext)_localctx).NAME!=null?((St_attribContext)_localctx).NAME.getText():null));
-			  			symbol_table_not_used.add((((St_attribContext)_localctx).NAME!=null?((St_attribContext)_localctx).NAME.getText():null));
+					  		if(symbol_table.indexOf((((St_attribContext)_localctx).NAME!=null?((St_attribContext)_localctx).NAME.getText():null)) == -1){
+					  			symbol_table.add((((St_attribContext)_localctx).NAME!=null?((St_attribContext)_localctx).NAME.getText():null));
+					  			symbol_table_not_used.add((((St_attribContext)_localctx).NAME!=null?((St_attribContext)_localctx).NAME.getText():null));
 
-			  			if(((St_attribContext)_localctx).e1.type == 'i')
-			  				symbol_type.add('i');
-			  			else
-			  				symbol_type.add('a');
-			  		}
-			  		else
-			  		{
-			  			if(symbol_type.get(symbol_table.indexOf((((St_attribContext)_localctx).NAME!=null?((St_attribContext)_localctx).NAME.getText():null))) != ((St_attribContext)_localctx).e1.type)
-						{
-							if(((St_attribContext)_localctx).e1.type == 'i')
-							{
-								System.err.println("ERROR: "+(((St_attribContext)_localctx).NAME!=null?((St_attribContext)_localctx).NAME.getText():null)+" is an string");
-								errors++;//System.exit(1);
-							}
-							else
-							{
-								System.err.println("ERROR: "+(((St_attribContext)_localctx).NAME!=null?((St_attribContext)_localctx).NAME.getText():null)+" is an integer");
-								errors++;//System.exit(1);
-							}
-						}
-			  		}
+					  			if(((St_attribContext)_localctx).e2.type == 'i')
+					  				symbol_type.add('i');
+					  			else if(((St_attribContext)_localctx).e2.type == 'a')
+					  				symbol_type.add('a');
+					  		}
+					  		else
+					  		{
+					  			if(symbol_type.get(symbol_table.indexOf((((St_attribContext)_localctx).NAME!=null?((St_attribContext)_localctx).NAME.getText():null))) != ((St_attribContext)_localctx).e2.type)
+								{
+									if(((St_attribContext)_localctx).e2.type == 'i')
+									{
+										System.err.println("ERROR: "+(((St_attribContext)_localctx).NAME!=null?((St_attribContext)_localctx).NAME.getText():null)+" is an string");
+										errors++;
+									}
+									else
+									{
+										System.err.println("ERROR: "+(((St_attribContext)_localctx).NAME!=null?((St_attribContext)_localctx).NAME.getText():null)+" is an integer");
+										errors++;
+									}
+								}
+					  		}
 
-					emit(symbol_type.get(symbol_table.indexOf((((St_attribContext)_localctx).NAME!=null?((St_attribContext)_localctx).NAME.getText():null))) + "store " + symbol_table.indexOf((((St_attribContext)_localctx).NAME!=null?((St_attribContext)_localctx).NAME.getText():null)), -1);
-			  	
+					  		if(isarray)
+					  			emit(" iastore "+symbol_table.indexOf((((St_attribContext)_localctx).NAME!=null?((St_attribContext)_localctx).NAME.getText():null)), -3);
+					  		else
+								emit(symbol_type.get(symbol_table.indexOf((((St_attribContext)_localctx).NAME!=null?((St_attribContext)_localctx).NAME.getText():null))) + "store " + symbol_table.indexOf((((St_attribContext)_localctx).NAME!=null?((St_attribContext)_localctx).NAME.getText():null)), -1);
+					  	
+				}
+				break;
+			case ARRAY:
+				{
+				setState(104);
+				match(ARRAY);
+				setState(105);
+				exp_aritmetic();
+
+				  			symbol_table.add((((St_attribContext)_localctx).NAME!=null?((St_attribContext)_localctx).NAME.getText():null));
+				  			symbol_type.add('v');
+
+				  			emit(" newarray int", 0);
+				  			emit(" astore "+symbol_table.indexOf((((St_attribContext)_localctx).NAME!=null?((St_attribContext)_localctx).NAME.getText():null)), -1);
+						
+				}
+				break;
+			default:
+				throw new NoViableAltException(this);
+			}
 			}
 		}
 		catch (RecognitionException re) {
@@ -502,42 +754,42 @@ public class DubemParser extends Parser {
 
 	public final St_whileContext st_while() throws RecognitionException {
 		St_whileContext _localctx = new St_whileContext(_ctx, getState());
-		enterRule(_localctx, 8, RULE_st_while);
+		enterRule(_localctx, 12, RULE_st_while);
 		int _la;
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(63);
+			setState(110);
 			match(WHILE);
 
 			  		int local = ++count_while;
 			  		System.out.println("BEGIN_WHILE_"+local+":");
 			  	
-			setState(65);
+			setState(112);
 			((St_whileContext)_localctx).s = exp_comparison();
-			setState(66);
+			setState(113);
 			match(NL);
 
 			  		emit(((St_whileContext)_localctx).s.bytecode + " END_WHILE_" +local, -2);
 			  	
-			setState(71);
+			setState(118);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
 			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << PRINT) | (1L << WHILE) | (1L << IF) | (1L << FOR) | (1L << NAME) | (1L << NL))) != 0)) {
 				{
 				{
-				setState(68);
+				setState(115);
 				statement();
 				}
 				}
-				setState(73);
+				setState(120);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 			}
 			 emit("goto BEGIN_WHILE_"+local, 0); 
-			setState(75);
+			setState(122);
 			match(END);
-			setState(76);
+			setState(123);
 			match(NL);
 			 System.out.println("END_WHILE_"+local+":"); 
 			}
@@ -587,30 +839,30 @@ public class DubemParser extends Parser {
 
 	public final St_ifContext st_if() throws RecognitionException {
 		St_ifContext _localctx = new St_ifContext(_ctx, getState());
-		enterRule(_localctx, 10, RULE_st_if);
+		enterRule(_localctx, 14, RULE_st_if);
 		int _la;
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(79);
+			setState(126);
 			match(IF);
 			 int local = ++count_if; 
-			setState(81);
+			setState(128);
 			((St_ifContext)_localctx).s = exp_comparison();
-			setState(82);
+			setState(129);
 			match(NL);
 			 emit(((St_ifContext)_localctx).s.bytecode + " NOT_IF"+local, -2); 
-			setState(87);
+			setState(134);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
 			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << PRINT) | (1L << WHILE) | (1L << IF) | (1L << FOR) | (1L << NAME) | (1L << NL))) != 0)) {
 				{
 				{
-				setState(84);
+				setState(131);
 				statement();
 				}
 				}
-				setState(89);
+				setState(136);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 			}
@@ -618,25 +870,25 @@ public class DubemParser extends Parser {
 					emit("goto END_ELSE"+local, 0);
 					System.out.println("NOT_IF"+local+":");
 				
-			setState(99);
+			setState(146);
 			_la = _input.LA(1);
 			if (_la==ELSE) {
 				{
-				setState(91);
+				setState(138);
 				match(ELSE);
-				setState(92);
+				setState(139);
 				match(NL);
-				setState(96);
+				setState(143);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 				while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << PRINT) | (1L << WHILE) | (1L << IF) | (1L << FOR) | (1L << NAME) | (1L << NL))) != 0)) {
 					{
 					{
-					setState(93);
+					setState(140);
 					statement();
 					}
 					}
-					setState(98);
+					setState(145);
 					_errHandler.sync(this);
 					_la = _input.LA(1);
 				}
@@ -644,9 +896,9 @@ public class DubemParser extends Parser {
 			}
 
 			 System.out.println("END_ELSE"+local+":"); 
-			setState(102);
+			setState(149);
 			match(END);
-			setState(103);
+			setState(150);
 			match(NL);
 			}
 		}
@@ -704,47 +956,47 @@ public class DubemParser extends Parser {
 
 	public final St_forContext st_for() throws RecognitionException {
 		St_forContext _localctx = new St_forContext(_ctx, getState());
-		enterRule(_localctx, 12, RULE_st_for);
+		enterRule(_localctx, 16, RULE_st_for);
 		int _la;
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(105);
+			setState(152);
 			match(FOR);
 			 int local = ++count_for; 
-			setState(107);
+			setState(154);
 			st_attrib();
-			setState(108);
+			setState(155);
 			match(SEMICOLON);
 			 System.out.println("FOR_COMP_"+local+":"); 
-			setState(110);
+			setState(157);
 			((St_forContext)_localctx).s = exp_comparison();
-			setState(111);
+			setState(158);
 			match(SEMICOLON);
 			 
 						emit(((St_forContext)_localctx).s.bytecode + " END_FOR_"+local, -2);
 						emit("goto FOR_"+local, 0);
 						System.out.println("FOR_INC_"+local+":");
 					
-			setState(113);
+			setState(160);
 			st_attrib();
-			setState(114);
+			setState(161);
 			match(NL);
 			 
 						emit("goto FOR_COMP_"+local, 0);
 						System.out.println("FOR_"+local+":"); 
 					
-			setState(119);
+			setState(166);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
 			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << PRINT) | (1L << WHILE) | (1L << IF) | (1L << FOR) | (1L << NAME) | (1L << NL))) != 0)) {
 				{
 				{
-				setState(116);
+				setState(163);
 				statement();
 				}
 				}
-				setState(121);
+				setState(168);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 			}
@@ -752,10 +1004,60 @@ public class DubemParser extends Parser {
 						emit("goto FOR_INC_"+local, 0);
 						System.out.println("END_FOR_"+local+":"); 
 					
-			setState(123);
+			setState(170);
 			match(END);
-			setState(124);
+			setState(171);
 			match(NL);
+			}
+		}
+		catch (RecognitionException re) {
+			_localctx.exception = re;
+			_errHandler.reportError(this, re);
+			_errHandler.recover(this, re);
+		}
+		finally {
+			exitRule();
+		}
+		return _localctx;
+	}
+
+	public static class St_callContext extends ParserRuleContext {
+		public Token NAME;
+		public TerminalNode NAME() { return getToken(DubemParser.NAME, 0); }
+		public TerminalNode OPEN_P() { return getToken(DubemParser.OPEN_P, 0); }
+		public TerminalNode CLOSE_P() { return getToken(DubemParser.CLOSE_P, 0); }
+		public TerminalNode NL() { return getToken(DubemParser.NL, 0); }
+		public St_callContext(ParserRuleContext parent, int invokingState) {
+			super(parent, invokingState);
+		}
+		@Override public int getRuleIndex() { return RULE_st_call; }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof DubemListener ) ((DubemListener)listener).enterSt_call(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof DubemListener ) ((DubemListener)listener).exitSt_call(this);
+		}
+	}
+
+	public final St_callContext st_call() throws RecognitionException {
+		St_callContext _localctx = new St_callContext(_ctx, getState());
+		enterRule(_localctx, 18, RULE_st_call);
+		try {
+			enterOuterAlt(_localctx, 1);
+			{
+			setState(173);
+			((St_callContext)_localctx).NAME = match(NAME);
+			setState(174);
+			match(OPEN_P);
+			setState(175);
+			match(CLOSE_P);
+			setState(176);
+			match(NL);
+
+					System.out.println("invokestatic Test/"+(((St_callContext)_localctx).NAME!=null?((St_callContext)_localctx).NAME.getText():null)+"()V");
+				
 			}
 		}
 		catch (RecognitionException re) {
@@ -802,14 +1104,14 @@ public class DubemParser extends Parser {
 
 	public final Exp_comparisonContext exp_comparison() throws RecognitionException {
 		Exp_comparisonContext _localctx = new Exp_comparisonContext(_ctx, getState());
-		enterRule(_localctx, 14, RULE_exp_comparison);
+		enterRule(_localctx, 20, RULE_exp_comparison);
 		int _la;
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(126);
+			setState(179);
 			((Exp_comparisonContext)_localctx).e1 = exp_aritmetic();
-			setState(127);
+			setState(180);
 			((Exp_comparisonContext)_localctx).op = _input.LT(1);
 			_la = _input.LA(1);
 			if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << EQ) | (1L << NE) | (1L << LT) | (1L << LE) | (1L << GT) | (1L << GE))) != 0)) ) {
@@ -817,7 +1119,7 @@ public class DubemParser extends Parser {
 			} else {
 				consume();
 			}
-			setState(128);
+			setState(181);
 			((Exp_comparisonContext)_localctx).e2 = exp_aritmetic();
 
 					if(((Exp_comparisonContext)_localctx).e1.type != ((Exp_comparisonContext)_localctx).e2.type)
@@ -881,20 +1183,20 @@ public class DubemParser extends Parser {
 
 	public final Exp_aritmeticContext exp_aritmetic() throws RecognitionException {
 		Exp_aritmeticContext _localctx = new Exp_aritmeticContext(_ctx, getState());
-		enterRule(_localctx, 16, RULE_exp_aritmetic);
+		enterRule(_localctx, 22, RULE_exp_aritmetic);
 		int _la;
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(131);
+			setState(184);
 			((Exp_aritmeticContext)_localctx).t1 = term();
-			setState(138);
+			setState(191);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
 			while (_la==PLUS || _la==MINUS) {
 				{
 				{
-				setState(132);
+				setState(185);
 				((Exp_aritmeticContext)_localctx).op = _input.LT(1);
 				_la = _input.LA(1);
 				if ( !(_la==PLUS || _la==MINUS) ) {
@@ -902,7 +1204,7 @@ public class DubemParser extends Parser {
 				} else {
 					consume();
 				}
-				setState(133);
+				setState(186);
 				((Exp_aritmeticContext)_localctx).t2 = term();
 				 
 							if(((Exp_aritmeticContext)_localctx).t1.type != ((Exp_aritmeticContext)_localctx).t2.type)
@@ -915,7 +1217,7 @@ public class DubemParser extends Parser {
 						
 				}
 				}
-				setState(140);
+				setState(193);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 			}
@@ -972,20 +1274,20 @@ public class DubemParser extends Parser {
 
 	public final TermContext term() throws RecognitionException {
 		TermContext _localctx = new TermContext(_ctx, getState());
-		enterRule(_localctx, 18, RULE_term);
+		enterRule(_localctx, 24, RULE_term);
 		int _la;
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(143);
+			setState(196);
 			((TermContext)_localctx).f1 = factor();
-			setState(150);
+			setState(203);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
 			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << TIMES) | (1L << OVER) | (1L << REMAINDER))) != 0)) {
 				{
 				{
-				setState(144);
+				setState(197);
 				((TermContext)_localctx).op = _input.LT(1);
 				_la = _input.LA(1);
 				if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << TIMES) | (1L << OVER) | (1L << REMAINDER))) != 0)) ) {
@@ -993,13 +1295,13 @@ public class DubemParser extends Parser {
 				} else {
 					consume();
 				}
-				setState(145);
+				setState(198);
 				((TermContext)_localctx).f2 = factor();
 				 
 							if(((TermContext)_localctx).f1.type == 'a' || ((TermContext)_localctx).f2.type == 'a')
 							{
 								System.err.println("ERROR: cannot mix types");
-								errors++;//System.exit(1);
+								errors++;
 							}
 
 							emit((((TermContext)_localctx).op!=null?((TermContext)_localctx).op.getType():0) == TIMES ? "imul" :
@@ -1007,7 +1309,7 @@ public class DubemParser extends Parser {
 						
 				}
 				}
-				setState(152);
+				setState(205);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 			}
@@ -1038,9 +1340,12 @@ public class DubemParser extends Parser {
 		}
 		public TerminalNode CLOSE_P() { return getToken(DubemParser.CLOSE_P, 0); }
 		public TerminalNode NAME() { return getToken(DubemParser.NAME, 0); }
+		public TerminalNode OPEN_B() { return getToken(DubemParser.OPEN_B, 0); }
+		public TerminalNode CLOSE_B() { return getToken(DubemParser.CLOSE_B, 0); }
 		public TerminalNode READ_INT() { return getToken(DubemParser.READ_INT, 0); }
 		public TerminalNode READ_STRING() { return getToken(DubemParser.READ_STRING, 0); }
 		public TerminalNode STRING() { return getToken(DubemParser.STRING, 0); }
+		public TerminalNode LENGTH() { return getToken(DubemParser.LENGTH, 0); }
 		public FactorContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
@@ -1057,14 +1362,15 @@ public class DubemParser extends Parser {
 
 	public final FactorContext factor() throws RecognitionException {
 		FactorContext _localctx = new FactorContext(_ctx, getState());
-		enterRule(_localctx, 20, RULE_factor);
+		enterRule(_localctx, 26, RULE_factor);
+		int _la;
 		try {
-			setState(170);
+			setState(234);
 			switch (_input.LA(1)) {
 			case NUMBER:
 				enterOuterAlt(_localctx, 1);
 				{
-				setState(155);
+				setState(208);
 				((FactorContext)_localctx).NUMBER = match(NUMBER);
 				 
 				        		emit(" ldc " + (((FactorContext)_localctx).NUMBER!=null?((FactorContext)_localctx).NUMBER.getText():null), +1);
@@ -1075,11 +1381,11 @@ public class DubemParser extends Parser {
 			case OPEN_P:
 				enterOuterAlt(_localctx, 2);
 				{
-				setState(157);
+				setState(210);
 				match(OPEN_P);
-				setState(158);
+				setState(211);
 				((FactorContext)_localctx).exp_aritmetic = exp_aritmetic();
-				setState(159);
+				setState(212);
 				match(CLOSE_P);
 
 					    		((FactorContext)_localctx).type =  ((FactorContext)_localctx).exp_aritmetic.type;
@@ -1089,26 +1395,47 @@ public class DubemParser extends Parser {
 			case NAME:
 				enterOuterAlt(_localctx, 3);
 				{
-				setState(162);
+				setState(215);
 				((FactorContext)_localctx).NAME = match(NAME);
+				 boolean isarray = false;
+				setState(222);
+				_la = _input.LA(1);
+				if (_la==OPEN_B) {
+					{
+					setState(217);
+					match(OPEN_B);
 
-				    		    if(symbol_table.indexOf((((FactorContext)_localctx).NAME!=null?((FactorContext)_localctx).NAME.getText():null)) >= 0){
-				    				emit(" " + symbol_type.get(symbol_table.indexOf((((FactorContext)_localctx).NAME!=null?((FactorContext)_localctx).NAME.getText():null))) + "load " + symbol_table.indexOf((((FactorContext)_localctx).NAME!=null?((FactorContext)_localctx).NAME.getText():null)), +1);
-				    				symbol_table_not_used.remove((((FactorContext)_localctx).NAME!=null?((FactorContext)_localctx).NAME.getText():null)); //removendo
-				    				((FactorContext)_localctx).type =  symbol_type.get(symbol_table.indexOf((((FactorContext)_localctx).NAME!=null?((FactorContext)_localctx).NAME.getText():null)));
-				    			}
-				    			else
-								{	
-									System.err.println("WARNING: Used non declared variable "+(((FactorContext)_localctx).NAME!=null?((FactorContext)_localctx).NAME.getText():null));
-									errors++;//System.exit(1);
-								}
-				    		
+									isarray = true;
+									emit(" aload " + symbol_table.indexOf((((FactorContext)_localctx).NAME!=null?((FactorContext)_localctx).NAME.getText():null)), +1);	
+								
+					setState(219);
+					exp_aritmetic();
+					setState(220);
+					match(CLOSE_B);
+					}
+				}
+
+
+						    if(symbol_table.indexOf((((FactorContext)_localctx).NAME!=null?((FactorContext)_localctx).NAME.getText():null)) >= 0){
+								emit(" " + symbol_type.get(symbol_table.indexOf((((FactorContext)_localctx).NAME!=null?((FactorContext)_localctx).NAME.getText():null))) + "load " + symbol_table.indexOf((((FactorContext)_localctx).NAME!=null?((FactorContext)_localctx).NAME.getText():null)), +1);
+								symbol_table_not_used.remove((((FactorContext)_localctx).NAME!=null?((FactorContext)_localctx).NAME.getText():null));
+								((FactorContext)_localctx).type =  symbol_type.get(symbol_table.indexOf((((FactorContext)_localctx).NAME!=null?((FactorContext)_localctx).NAME.getText():null)));
+							}
+							else
+							{	
+								System.err.println("WARNING: Used non declared variable "+(((FactorContext)_localctx).NAME!=null?((FactorContext)_localctx).NAME.getText():null));
+								//errors++;
+							}
+
+							if(isarray)
+								emit(" iaload", 1);
+						
 				}
 				break;
 			case READ_INT:
 				enterOuterAlt(_localctx, 4);
 				{
-				setState(164);
+				setState(225);
 				match(READ_INT);
 				 
 				    			emit(" invokestatic Runtime/readInt()I", +1);
@@ -1119,7 +1446,7 @@ public class DubemParser extends Parser {
 			case READ_STRING:
 				enterOuterAlt(_localctx, 5);
 				{
-				setState(166);
+				setState(227);
 				match(READ_STRING);
 
 								((FactorContext)_localctx).type =  'a';
@@ -1129,12 +1456,25 @@ public class DubemParser extends Parser {
 			case STRING:
 				enterOuterAlt(_localctx, 6);
 				{
-				setState(168);
+				setState(229);
 				((FactorContext)_localctx).STRING = match(STRING);
 
 					    		emit(" ldc " + (((FactorContext)_localctx).STRING!=null?((FactorContext)_localctx).STRING.getText():null), +1); 
 					        	((FactorContext)_localctx).type =  'a';
 					    	
+				}
+				break;
+			case LENGTH:
+				enterOuterAlt(_localctx, 7);
+				{
+				setState(231);
+				match(LENGTH);
+				setState(232);
+				((FactorContext)_localctx).NAME = match(NAME);
+
+								emit(" aload "+symbol_table.indexOf((((FactorContext)_localctx).NAME!=null?((FactorContext)_localctx).NAME.getText():null)), 1);
+								emit(" arraylength", 0);
+							
 				}
 				break;
 			default:
@@ -1153,55 +1493,80 @@ public class DubemParser extends Parser {
 	}
 
 	public static final String _serializedATN =
-		"\3\u0430\ud6d1\u8206\uad2d\u4417\uaef1\u8d80\uaadd\3 \u00af\4\2\t\2\4"+
+		"\3\u0430\ud6d1\u8206\uad2d\u4417\uaef1\u8d80\uaadd\3%\u00ef\4\2\t\2\4"+
 		"\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7\4\b\t\b\4\t\t\t\4\n\t\n\4\13\t"+
-		"\13\4\f\t\f\3\2\3\2\7\2\33\n\2\f\2\16\2\36\13\2\3\2\3\2\3\3\3\3\3\3\3"+
-		"\3\3\3\3\3\3\3\3\3\5\3*\n\3\3\4\3\4\3\4\3\4\3\4\3\4\3\4\3\4\3\4\7\4\65"+
-		"\n\4\f\4\16\48\13\4\3\4\3\4\3\4\3\5\3\5\3\5\3\5\3\5\3\6\3\6\3\6\3\6\3"+
-		"\6\3\6\7\6H\n\6\f\6\16\6K\13\6\3\6\3\6\3\6\3\6\3\6\3\7\3\7\3\7\3\7\3\7"+
-		"\3\7\7\7X\n\7\f\7\16\7[\13\7\3\7\3\7\3\7\3\7\7\7a\n\7\f\7\16\7d\13\7\5"+
-		"\7f\n\7\3\7\3\7\3\7\3\7\3\b\3\b\3\b\3\b\3\b\3\b\3\b\3\b\3\b\3\b\3\b\3"+
-		"\b\7\bx\n\b\f\b\16\b{\13\b\3\b\3\b\3\b\3\b\3\t\3\t\3\t\3\t\3\t\3\n\3\n"+
-		"\3\n\3\n\3\n\7\n\u008b\n\n\f\n\16\n\u008e\13\n\3\n\3\n\3\13\3\13\3\13"+
-		"\3\13\3\13\7\13\u0097\n\13\f\13\16\13\u009a\13\13\3\13\3\13\3\f\3\f\3"+
-		"\f\3\f\3\f\3\f\3\f\3\f\3\f\3\f\3\f\3\f\3\f\3\f\3\f\5\f\u00ad\n\f\3\f\2"+
-		"\2\r\2\4\6\b\n\f\16\20\22\24\26\2\5\3\2\r\22\3\2\3\4\3\2\5\7\u00b6\2\30"+
-		"\3\2\2\2\4)\3\2\2\2\6+\3\2\2\2\b<\3\2\2\2\nA\3\2\2\2\fQ\3\2\2\2\16k\3"+
-		"\2\2\2\20\u0080\3\2\2\2\22\u0085\3\2\2\2\24\u0091\3\2\2\2\26\u00ac\3\2"+
-		"\2\2\30\34\b\2\1\2\31\33\5\4\3\2\32\31\3\2\2\2\33\36\3\2\2\2\34\32\3\2"+
-		"\2\2\34\35\3\2\2\2\35\37\3\2\2\2\36\34\3\2\2\2\37 \b\2\1\2 \3\3\2\2\2"+
-		"!*\7 \2\2\"*\5\6\4\2#$\5\b\5\2$%\7 \2\2%*\3\2\2\2&*\5\n\6\2\'*\5\f\7\2"+
-		"(*\5\16\b\2)!\3\2\2\2)\"\3\2\2\2)#\3\2\2\2)&\3\2\2\2)\'\3\2\2\2)(\3\2"+
-		"\2\2*\5\3\2\2\2+,\7\23\2\2,-\b\4\1\2-.\5\22\n\2.\66\b\4\1\2/\60\7\13\2"+
-		"\2\60\61\b\4\1\2\61\62\5\22\n\2\62\63\b\4\1\2\63\65\3\2\2\2\64/\3\2\2"+
-		"\2\658\3\2\2\2\66\64\3\2\2\2\66\67\3\2\2\2\679\3\2\2\28\66\3\2\2\29:\7"+
-		" \2\2:;\b\4\1\2;\7\3\2\2\2<=\7\36\2\2=>\7\n\2\2>?\5\22\n\2?@\b\5\1\2@"+
-		"\t\3\2\2\2AB\7\25\2\2BC\b\6\1\2CD\5\20\t\2DE\7 \2\2EI\b\6\1\2FH\5\4\3"+
-		"\2GF\3\2\2\2HK\3\2\2\2IG\3\2\2\2IJ\3\2\2\2JL\3\2\2\2KI\3\2\2\2LM\b\6\1"+
-		"\2MN\7\31\2\2NO\7 \2\2OP\b\6\1\2P\13\3\2\2\2QR\7\26\2\2RS\b\7\1\2ST\5"+
-		"\20\t\2TU\7 \2\2UY\b\7\1\2VX\5\4\3\2WV\3\2\2\2X[\3\2\2\2YW\3\2\2\2YZ\3"+
-		"\2\2\2Z\\\3\2\2\2[Y\3\2\2\2\\e\b\7\1\2]^\7\27\2\2^b\7 \2\2_a\5\4\3\2`"+
-		"_\3\2\2\2ad\3\2\2\2b`\3\2\2\2bc\3\2\2\2cf\3\2\2\2db\3\2\2\2e]\3\2\2\2"+
-		"ef\3\2\2\2fg\3\2\2\2gh\b\7\1\2hi\7\31\2\2ij\7 \2\2j\r\3\2\2\2kl\7\30\2"+
-		"\2lm\b\b\1\2mn\5\b\5\2no\7\f\2\2op\b\b\1\2pq\5\20\t\2qr\7\f\2\2rs\b\b"+
-		"\1\2st\5\b\5\2tu\7 \2\2uy\b\b\1\2vx\5\4\3\2wv\3\2\2\2x{\3\2\2\2yw\3\2"+
-		"\2\2yz\3\2\2\2z|\3\2\2\2{y\3\2\2\2|}\b\b\1\2}~\7\31\2\2~\177\7 \2\2\177"+
-		"\17\3\2\2\2\u0080\u0081\5\22\n\2\u0081\u0082\t\2\2\2\u0082\u0083\5\22"+
-		"\n\2\u0083\u0084\b\t\1\2\u0084\21\3\2\2\2\u0085\u008c\5\24\13\2\u0086"+
-		"\u0087\t\3\2\2\u0087\u0088\5\24\13\2\u0088\u0089\b\n\1\2\u0089\u008b\3"+
-		"\2\2\2\u008a\u0086\3\2\2\2\u008b\u008e\3\2\2\2\u008c\u008a\3\2\2\2\u008c"+
-		"\u008d\3\2\2\2\u008d\u008f\3\2\2\2\u008e\u008c\3\2\2\2\u008f\u0090\b\n"+
-		"\1\2\u0090\23\3\2\2\2\u0091\u0098\5\26\f\2\u0092\u0093\t\4\2\2\u0093\u0094"+
-		"\5\26\f\2\u0094\u0095\b\13\1\2\u0095\u0097\3\2\2\2\u0096\u0092\3\2\2\2"+
-		"\u0097\u009a\3\2\2\2\u0098\u0096\3\2\2\2\u0098\u0099\3\2\2\2\u0099\u009b"+
-		"\3\2\2\2\u009a\u0098\3\2\2\2\u009b\u009c\b\13\1\2\u009c\25\3\2\2\2\u009d"+
-		"\u009e\7\35\2\2\u009e\u00ad\b\f\1\2\u009f\u00a0\7\b\2\2\u00a0\u00a1\5"+
-		"\22\n\2\u00a1\u00a2\7\t\2\2\u00a2\u00a3\b\f\1\2\u00a3\u00ad\3\2\2\2\u00a4"+
-		"\u00a5\7\36\2\2\u00a5\u00ad\b\f\1\2\u00a6\u00a7\7\24\2\2\u00a7\u00ad\b"+
-		"\f\1\2\u00a8\u00a9\7\32\2\2\u00a9\u00ad\b\f\1\2\u00aa\u00ab\7\33\2\2\u00ab"+
-		"\u00ad\b\f\1\2\u00ac\u009d\3\2\2\2\u00ac\u009f\3\2\2\2\u00ac\u00a4\3\2"+
-		"\2\2\u00ac\u00a6\3\2\2\2\u00ac\u00a8\3\2\2\2\u00ac\u00aa\3\2\2\2\u00ad"+
-		"\27\3\2\2\2\r\34)\66IYbey\u008c\u0098\u00ac";
+		"\13\4\f\t\f\4\r\t\r\4\16\t\16\4\17\t\17\3\2\3\2\3\2\7\2\"\n\2\f\2\16\2"+
+		"%\13\2\3\2\3\2\3\3\3\3\3\3\3\3\3\3\3\3\3\3\7\3\60\n\3\f\3\16\3\63\13\3"+
+		"\3\3\3\3\3\3\3\3\3\4\3\4\7\4;\n\4\f\4\16\4>\13\4\3\4\3\4\3\5\3\5\3\5\3"+
+		"\5\3\5\3\5\3\5\3\5\3\5\5\5K\n\5\3\6\3\6\3\6\3\6\3\6\3\6\3\6\3\6\3\6\7"+
+		"\6V\n\6\f\6\16\6Y\13\6\3\6\3\6\3\6\3\7\3\7\3\7\3\7\3\7\3\7\3\7\5\7e\n"+
+		"\7\3\7\3\7\3\7\3\7\3\7\3\7\3\7\3\7\5\7o\n\7\3\b\3\b\3\b\3\b\3\b\3\b\7"+
+		"\bw\n\b\f\b\16\bz\13\b\3\b\3\b\3\b\3\b\3\b\3\t\3\t\3\t\3\t\3\t\3\t\7\t"+
+		"\u0087\n\t\f\t\16\t\u008a\13\t\3\t\3\t\3\t\3\t\7\t\u0090\n\t\f\t\16\t"+
+		"\u0093\13\t\5\t\u0095\n\t\3\t\3\t\3\t\3\t\3\n\3\n\3\n\3\n\3\n\3\n\3\n"+
+		"\3\n\3\n\3\n\3\n\3\n\7\n\u00a7\n\n\f\n\16\n\u00aa\13\n\3\n\3\n\3\n\3\n"+
+		"\3\13\3\13\3\13\3\13\3\13\3\13\3\f\3\f\3\f\3\f\3\f\3\r\3\r\3\r\3\r\3\r"+
+		"\7\r\u00c0\n\r\f\r\16\r\u00c3\13\r\3\r\3\r\3\16\3\16\3\16\3\16\3\16\7"+
+		"\16\u00cc\n\16\f\16\16\16\u00cf\13\16\3\16\3\16\3\17\3\17\3\17\3\17\3"+
+		"\17\3\17\3\17\3\17\3\17\3\17\3\17\3\17\3\17\3\17\5\17\u00e1\n\17\3\17"+
+		"\3\17\3\17\3\17\3\17\3\17\3\17\3\17\3\17\3\17\5\17\u00ed\n\17\3\17\2\2"+
+		"\20\2\4\6\b\n\f\16\20\22\24\26\30\32\34\2\5\3\2\17\24\3\2\3\4\3\2\5\7"+
+		"\u00fb\2\36\3\2\2\2\4(\3\2\2\2\68\3\2\2\2\bJ\3\2\2\2\nL\3\2\2\2\f]\3\2"+
+		"\2\2\16p\3\2\2\2\20\u0080\3\2\2\2\22\u009a\3\2\2\2\24\u00af\3\2\2\2\26"+
+		"\u00b5\3\2\2\2\30\u00ba\3\2\2\2\32\u00c6\3\2\2\2\34\u00ec\3\2\2\2\36#"+
+		"\b\2\1\2\37\"\5\4\3\2 \"\7%\2\2!\37\3\2\2\2! \3\2\2\2\"%\3\2\2\2#!\3\2"+
+		"\2\2#$\3\2\2\2$&\3\2\2\2%#\3\2\2\2&\'\5\6\4\2\'\3\3\2\2\2()\7\27\2\2)"+
+		"*\7#\2\2*+\7\b\2\2+,\7\t\2\2,-\7%\2\2-\61\b\3\1\2.\60\5\b\5\2/.\3\2\2"+
+		"\2\60\63\3\2\2\2\61/\3\2\2\2\61\62\3\2\2\2\62\64\3\2\2\2\63\61\3\2\2\2"+
+		"\64\65\7\36\2\2\65\66\7%\2\2\66\67\b\3\1\2\67\5\3\2\2\28<\b\4\1\29;\5"+
+		"\b\5\2:9\3\2\2\2;>\3\2\2\2<:\3\2\2\2<=\3\2\2\2=?\3\2\2\2><\3\2\2\2?@\b"+
+		"\4\1\2@\7\3\2\2\2AK\7%\2\2BK\5\n\6\2CD\5\f\7\2DE\7%\2\2EK\3\2\2\2FK\5"+
+		"\16\b\2GK\5\20\t\2HK\5\22\n\2IK\5\24\13\2JA\3\2\2\2JB\3\2\2\2JC\3\2\2"+
+		"\2JF\3\2\2\2JG\3\2\2\2JH\3\2\2\2JI\3\2\2\2K\t\3\2\2\2LM\7\30\2\2MN\b\6"+
+		"\1\2NO\5\30\r\2OW\b\6\1\2PQ\7\13\2\2QR\b\6\1\2RS\5\30\r\2ST\b\6\1\2TV"+
+		"\3\2\2\2UP\3\2\2\2VY\3\2\2\2WU\3\2\2\2WX\3\2\2\2XZ\3\2\2\2YW\3\2\2\2Z"+
+		"[\7%\2\2[\\\b\6\1\2\\\13\3\2\2\2]^\7#\2\2^d\b\7\1\2_`\b\7\1\2`a\7\r\2"+
+		"\2ab\5\30\r\2bc\7\16\2\2ce\3\2\2\2d_\3\2\2\2de\3\2\2\2ef\3\2\2\2fn\7\n"+
+		"\2\2gh\5\30\r\2hi\b\7\1\2io\3\2\2\2jk\7\25\2\2kl\5\30\r\2lm\b\7\1\2mo"+
+		"\3\2\2\2ng\3\2\2\2nj\3\2\2\2o\r\3\2\2\2pq\7\32\2\2qr\b\b\1\2rs\5\26\f"+
+		"\2st\7%\2\2tx\b\b\1\2uw\5\b\5\2vu\3\2\2\2wz\3\2\2\2xv\3\2\2\2xy\3\2\2"+
+		"\2y{\3\2\2\2zx\3\2\2\2{|\b\b\1\2|}\7\36\2\2}~\7%\2\2~\177\b\b\1\2\177"+
+		"\17\3\2\2\2\u0080\u0081\7\33\2\2\u0081\u0082\b\t\1\2\u0082\u0083\5\26"+
+		"\f\2\u0083\u0084\7%\2\2\u0084\u0088\b\t\1\2\u0085\u0087\5\b\5\2\u0086"+
+		"\u0085\3\2\2\2\u0087\u008a\3\2\2\2\u0088\u0086\3\2\2\2\u0088\u0089\3\2"+
+		"\2\2\u0089\u008b\3\2\2\2\u008a\u0088\3\2\2\2\u008b\u0094\b\t\1\2\u008c"+
+		"\u008d\7\34\2\2\u008d\u0091\7%\2\2\u008e\u0090\5\b\5\2\u008f\u008e\3\2"+
+		"\2\2\u0090\u0093\3\2\2\2\u0091\u008f\3\2\2\2\u0091\u0092\3\2\2\2\u0092"+
+		"\u0095\3\2\2\2\u0093\u0091\3\2\2\2\u0094\u008c\3\2\2\2\u0094\u0095\3\2"+
+		"\2\2\u0095\u0096\3\2\2\2\u0096\u0097\b\t\1\2\u0097\u0098\7\36\2\2\u0098"+
+		"\u0099\7%\2\2\u0099\21\3\2\2\2\u009a\u009b\7\35\2\2\u009b\u009c\b\n\1"+
+		"\2\u009c\u009d\5\f\7\2\u009d\u009e\7\f\2\2\u009e\u009f\b\n\1\2\u009f\u00a0"+
+		"\5\26\f\2\u00a0\u00a1\7\f\2\2\u00a1\u00a2\b\n\1\2\u00a2\u00a3\5\f\7\2"+
+		"\u00a3\u00a4\7%\2\2\u00a4\u00a8\b\n\1\2\u00a5\u00a7\5\b\5\2\u00a6\u00a5"+
+		"\3\2\2\2\u00a7\u00aa\3\2\2\2\u00a8\u00a6\3\2\2\2\u00a8\u00a9\3\2\2\2\u00a9"+
+		"\u00ab\3\2\2\2\u00aa\u00a8\3\2\2\2\u00ab\u00ac\b\n\1\2\u00ac\u00ad\7\36"+
+		"\2\2\u00ad\u00ae\7%\2\2\u00ae\23\3\2\2\2\u00af\u00b0\7#\2\2\u00b0\u00b1"+
+		"\7\b\2\2\u00b1\u00b2\7\t\2\2\u00b2\u00b3\7%\2\2\u00b3\u00b4\b\13\1\2\u00b4"+
+		"\25\3\2\2\2\u00b5\u00b6\5\30\r\2\u00b6\u00b7\t\2\2\2\u00b7\u00b8\5\30"+
+		"\r\2\u00b8\u00b9\b\f\1\2\u00b9\27\3\2\2\2\u00ba\u00c1\5\32\16\2\u00bb"+
+		"\u00bc\t\3\2\2\u00bc\u00bd\5\32\16\2\u00bd\u00be\b\r\1\2\u00be\u00c0\3"+
+		"\2\2\2\u00bf\u00bb\3\2\2\2\u00c0\u00c3\3\2\2\2\u00c1\u00bf\3\2\2\2\u00c1"+
+		"\u00c2\3\2\2\2\u00c2\u00c4\3\2\2\2\u00c3\u00c1\3\2\2\2\u00c4\u00c5\b\r"+
+		"\1\2\u00c5\31\3\2\2\2\u00c6\u00cd\5\34\17\2\u00c7\u00c8\t\4\2\2\u00c8"+
+		"\u00c9\5\34\17\2\u00c9\u00ca\b\16\1\2\u00ca\u00cc\3\2\2\2\u00cb\u00c7"+
+		"\3\2\2\2\u00cc\u00cf\3\2\2\2\u00cd\u00cb\3\2\2\2\u00cd\u00ce\3\2\2\2\u00ce"+
+		"\u00d0\3\2\2\2\u00cf\u00cd\3\2\2\2\u00d0\u00d1\b\16\1\2\u00d1\33\3\2\2"+
+		"\2\u00d2\u00d3\7\"\2\2\u00d3\u00ed\b\17\1\2\u00d4\u00d5\7\b\2\2\u00d5"+
+		"\u00d6\5\30\r\2\u00d6\u00d7\7\t\2\2\u00d7\u00d8\b\17\1\2\u00d8\u00ed\3"+
+		"\2\2\2\u00d9\u00da\7#\2\2\u00da\u00e0\b\17\1\2\u00db\u00dc\7\r\2\2\u00dc"+
+		"\u00dd\b\17\1\2\u00dd\u00de\5\30\r\2\u00de\u00df\7\16\2\2\u00df\u00e1"+
+		"\3\2\2\2\u00e0\u00db\3\2\2\2\u00e0\u00e1\3\2\2\2\u00e1\u00e2\3\2\2\2\u00e2"+
+		"\u00ed\b\17\1\2\u00e3\u00e4\7\31\2\2\u00e4\u00ed\b\17\1\2\u00e5\u00e6"+
+		"\7\37\2\2\u00e6\u00ed\b\17\1\2\u00e7\u00e8\7 \2\2\u00e8\u00ed\b\17\1\2"+
+		"\u00e9\u00ea\7\26\2\2\u00ea\u00eb\7#\2\2\u00eb\u00ed\b\17\1\2\u00ec\u00d2"+
+		"\3\2\2\2\u00ec\u00d4\3\2\2\2\u00ec\u00d9\3\2\2\2\u00ec\u00e3\3\2\2\2\u00ec"+
+		"\u00e5\3\2\2\2\u00ec\u00e7\3\2\2\2\u00ec\u00e9\3\2\2\2\u00ed\35\3\2\2"+
+		"\2\23!#\61<JWdnx\u0088\u0091\u0094\u00a8\u00c1\u00cd\u00e0\u00ec";
 	public static final ATN _ATN =
 		new ATNDeserializer().deserialize(_serializedATN.toCharArray());
 	static {

@@ -68,6 +68,8 @@ GE          : '>=';
 ARRAY       : 'array';
 LENGTH      : 'length';
 
+PROCEDURE   : 'procedure';
+
 PRINT		: 'print';
 READ_INT    : 'read_int';
 WHILE       : 'while';
@@ -89,8 +91,8 @@ NL		    : ('\r')?'\n' ;
 /*---------------- PARSER RULES ----------------*/
 
 program
-    :  
-	{ 
+    :
+	{
 		System.out.println(".source Test.j");
 		System.out.println(".class public Test"); 
 		System.out.println(".super  java/lang/Object"); 
@@ -98,12 +100,44 @@ program
 		System.out.println("aload_0");
 		System.out.println("invokenonvirtual java/lang/Object/<init>()V");
 		System.out.println("return");
-		System.out.println(".end method");
-		System.out.println(".method public static main([Ljava/lang/String;)V");
-		
-
-
+		System.out.println(".end method\n\n");
 	} 	
+	
+	(procedure | NL)*
+	main
+;
+procedure
+	: PROCEDURE NAME OPEN_P CLOSE_P NL 
+	{
+		System.out.println(".method public static "+$NAME.text+"()V");
+	}
+	
+	( statement )* END NL
+	
+	{
+		for(int i = 0; i < symbol_table_not_used.size(); i++)
+		{
+			System.err.println("WARNING: nao usou "+symbol_table_not_used.get(i));
+			//errors++;
+		}
+
+		System.out.println("  return");
+		System.out.println(".limit stack"+ " " + stack_max);
+		System.out.println(".limit locals"+ " " + symbol_table.size()+1);
+		System.out.println(".end method\n\n");
+		
+		symbol_table.clear();
+		symbol_table_not_used.clear();
+		symbol_type.clear();
+		stack_max = 0;
+		stack_cur = 0;
+	}
+;
+main
+	:
+	{
+		System.out.println(".method public static main([Ljava/lang/String;)V");
+	}
 	
 	( statement )*
 	
@@ -111,17 +145,17 @@ program
 		for(int i = 0; i < symbol_table_not_used.size(); i++)
 		{
 			System.err.println("WARNING: nao usou "+symbol_table_not_used.get(i));
-			errors++;
+			//errors++;
 		}
 
 		System.out.println("  return"); 
 		System.out.println(".limit stack"+ " " + stack_max); 
 		System.out.println(".limit locals"+ " " + symbol_table.size()+1); 
 		System.out.println(".end method");
-	} 	
+	}
 ;
 statement
-  :	NL | st_print | st_attrib NL | st_while | st_if | st_for
+  :	NL | st_print | st_attrib NL | st_while | st_if | st_for | st_call
 ;
 st_print
   :	PRINT
@@ -158,7 +192,7 @@ st_attrib
   	(
   	 	{
 			isarray = true;
-			emit(' aload '+symbol_table.indexOf($NAME.text), 1);
+			emit(" aload "+symbol_table.indexOf($NAME.text), 1);
 		} 
   		OPEN_B e1 = exp_aritmetic CLOSE_B 
 	)?
@@ -169,9 +203,9 @@ st_attrib
 	  			symbol_table.add($NAME.text);
 	  			symbol_table_not_used.add($NAME.text);
 
-	  			if($e1.type == 'i')
+	  			if($e2.type == 'i')
 	  				symbol_type.add('i');
-	  			else
+	  			else if($e2.type == 'a')
 	  				symbol_type.add('a');
 	  		}
 	  		else
@@ -192,7 +226,7 @@ st_attrib
 	  		}
 
 	  		if(isarray)
-	  			emit(" iastore ".symbol_table.indexOf($NAME.text), -3);
+	  			emit(" iastore "+symbol_table.indexOf($NAME.text), -3);
 	  		else
 				emit(symbol_type.get(symbol_table.indexOf($NAME.text)) + "store " + symbol_table.indexOf($NAME.text), -1);
 	  	}
@@ -259,6 +293,12 @@ st_for
 		}
 	END NL
 ;
+st_call
+	: NAME OPEN_P CLOSE_P NL
+	{
+		System.out.println("invokestatic Test/"+$NAME.text+"()V");
+	}
+;
 exp_comparison returns [String bytecode]
 	: e1 = exp_aritmetic op = ( EQ | NE | LT | LE | GT | GE ) e2 = exp_aritmetic
 	{
@@ -317,20 +357,32 @@ factor returns [char type]
 	    		$type = $exp_aritmetic.type;
 	    	}
     |   NAME 
-    	( OPEN_B
-    		{
-    		    if(symbol_table.indexOf($NAME.text) >= 0){
-    				emit(" " + symbol_type.get(symbol_table.indexOf($NAME.text)) + "load " + symbol_table.indexOf($NAME.text), +1);
-    				symbol_table_not_used.remove($NAME.text);
-    				$type = symbol_type.get(symbol_table.indexOf($NAME.text));
-    			}
-    			else
-				{	
-					System.err.println("WARNING: Used non declared variable "+$NAME.text);
-					errors++;
-				}
-    		}
-    	CLOSE_B )?
+    	{ boolean isarray = false;}
+    	( OPEN_B 
+			{
+				isarray = true;
+				emit(" aload " + symbol_table.indexOf($NAME.text), +1);	
+			}
+    		
+    		exp_aritmetic 
+    		CLOSE_B
+    	)?
+	    	
+    	{
+		    if(symbol_table.indexOf($NAME.text) >= 0){
+				emit(" " + symbol_type.get(symbol_table.indexOf($NAME.text)) + "load " + symbol_table.indexOf($NAME.text), +1);
+				symbol_table_not_used.remove($NAME.text);
+				$type = symbol_type.get(symbol_table.indexOf($NAME.text));
+			}
+			else
+			{	
+				System.err.println("WARNING: Used non declared variable "+$NAME.text);
+				//errors++;
+			}
+
+			if(isarray)
+				emit(" iaload", 1);
+		}
     |   READ_INT
     		{ 
     			emit(" invokestatic Runtime/readInt()I", +1);
@@ -347,7 +399,7 @@ factor returns [char type]
 	    	}
 	|   LENGTH NAME
 			{
-				emit(" aload "symbol_table.indexOf($NAME.text), 1);
+				emit(" aload "+symbol_table.indexOf($NAME.text), 1);
 				emit(" arraylength", 0);
 			}
 ;
