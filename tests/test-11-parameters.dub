@@ -1,0 +1,9 @@
+procedure cubo (n)
+    print n * n * n
+end
+
+n = 3
+cubo(n)
+cubo(4)
+cubo(4+n)
+print n

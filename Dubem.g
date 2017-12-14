@@ -15,6 +15,8 @@ grammar Dubem;
     private static int count_while = 0;
     private static int count_if = 0;
     private static int count_for = 0;
+    private static String args = "";
+    private static boolean has_return = false;
 
     private static int stack_cur, stack_max, errors;
 
@@ -69,6 +71,8 @@ ARRAY       : 'array';
 LENGTH      : 'length';
 
 PROCEDURE   : 'procedure';
+FUNCTION    : 'function';
+RETURN      : 'return';
 
 PRINT		: 'print';
 READ_INT    : 'read_int';
@@ -103,13 +107,17 @@ program
 		System.out.println(".end method\n\n");
 	} 	
 	
-	(procedure | NL)*
+	(procedure | function | NL)*
 	main
 ;
 procedure
-	: PROCEDURE NAME OPEN_P CLOSE_P NL 
+	: PROCEDURE NAME OPEN_P ( parameters )? CLOSE_P NL
 	{
-		System.out.println(".method public static "+$NAME.text+"()V");
+		String params = "";
+		for(int x = 0; x < symbol_table.size(); x++)
+			params += "I";
+
+		System.out.println(".method public static "+$NAME.text+"("+params+")V");
 	}
 	
 	( statement )* END NL
@@ -123,7 +131,7 @@ procedure
 
 		System.out.println("  return");
 		System.out.println(".limit stack"+ " " + stack_max);
-		System.out.println(".limit locals"+ " " + symbol_table.size()+1);
+		System.out.println(".limit locals"+ " " + symbol_table.size());
 		System.out.println(".end method\n\n");
 		
 		symbol_table.clear();
@@ -133,10 +141,80 @@ procedure
 		stack_cur = 0;
 	}
 ;
+function
+	: FUNCTION NAME OPEN_P ( parameters )? CLOSE_P NL
+	{
+		String params = "";
+		for(int x = 0; x < symbol_table.size(); x++)
+			params += "I";
+
+		System.out.println(".method public static "+$NAME.text+"("+params+")I");
+	}
+	
+	( statement )* 
+
+	{
+		if(!has_return) 
+		{
+			System.err.println("ERROR: statement return not found");
+			errors++;
+		}
+
+		has_return = false;
+	}
+
+	END NL
+	
+	{
+		for(int i = 0; i < symbol_table_not_used.size(); i++)
+		{
+			System.err.println("WARNING: nao usou "+symbol_table_not_used.get(i));
+			//errors++;
+		}
+
+		System.out.println("  return");
+		System.out.println(".limit stack"+ " " + stack_max);
+		System.out.println(".limit locals"+ " " + symbol_table.size());
+		System.out.println(".end method\n\n");
+		
+		symbol_table.clear();
+		symbol_table_not_used.clear();
+		symbol_type.clear();
+		stack_max = 0;
+		stack_cur = 0;
+	}
+;
+parameters
+	: NAME
+	{
+		symbol_table.add($NAME.text);
+		symbol_table_not_used.add($NAME.text);
+
+		symbol_type.add('i');
+	}
+	(COMMA NAME
+		{
+			if(symbol_table.indexOf($NAME.text) == -1){
+				symbol_table.add($NAME.text);
+				symbol_table_not_used.add($NAME.text);
+
+				symbol_type.add('i');
+			}
+			else
+			{
+				System.err.println("ERROR: parameter already passed!");
+				errors++;
+			}
+		}
+	)*
+;
 main
 	:
 	{
 		System.out.println(".method public static main([Ljava/lang/String;)V");
+		
+		symbol_table.add("args");
+		symbol_type.add('i');
 	}
 	
 	( statement )*
@@ -150,12 +228,12 @@ main
 
 		System.out.println("  return"); 
 		System.out.println(".limit stack"+ " " + stack_max); 
-		System.out.println(".limit locals"+ " " + symbol_table.size()+1); 
+		System.out.println(".limit locals"+ " " + symbol_table.size()); 
 		System.out.println(".end method");
 	}
 ;
 statement
-  :	NL | st_print | st_attrib NL | st_while | st_if | st_for | st_call
+  :	NL | st_print | st_attrib NL | st_while | st_if | st_for | st_call | st_return
 ;
 st_print
   :	PRINT
@@ -187,7 +265,7 @@ st_print
 	}
 ;
 st_attrib
-  : NAME 
+  : NAME
 	    { boolean isarray = false; }
   	(
   	 	{
@@ -294,10 +372,30 @@ st_for
 	END NL
 ;
 st_call
-	: NAME OPEN_P CLOSE_P NL
+	: NAME OPEN_P (arguments)? CLOSE_P NL
 	{
-		System.out.println("invokestatic Test/"+$NAME.text+"()V");
+		System.out.println("invokestatic Test/"+$NAME.text+"("+args+")V");
+		args = "";
 	}
+;
+st_return
+	: RETURN exp_aritmetic
+	{
+		has_return = true;
+		emit("ireturn", 0);
+	}
+	NL
+;
+arguments
+	: exp_aritmetic
+		{
+			args = "I";
+		}
+		(COMMA exp_aritmetic
+			{
+				args += "I";
+			}
+		)*
 ;
 exp_comparison returns [String bytecode]
 	: e1 = exp_aritmetic op = ( EQ | NE | LT | LE | GT | GE ) e2 = exp_aritmetic
@@ -401,5 +499,11 @@ factor returns [char type]
 			{
 				emit(" aload "+symbol_table.indexOf($NAME.text), 1);
 				emit(" arraylength", 0);
+			}
+	|   NAME OPEN_P (arguments)? CLOSE_P
+			{
+				System.out.println(" invokestatic Test/"+$NAME.text+"("+args+")I");
+				args = "";
+				$type = 'i';
 			}
 ;

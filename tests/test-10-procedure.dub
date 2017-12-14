@@ -1,8 +1,9 @@
 procedure cubo ()
-    n = 4
+    n = 3
     print n * n * n
 end
 
 n = 1
+cubo()
 cubo()
 print n

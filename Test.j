@@ -8,32 +8,32 @@ return
 .end method
 
 
-.method public static cubo()V
-    ldc 4
-   istore 0
-   getstatic java/lang/System/out Ljava/io/PrintStream;
+.method public static factorial(I)I
+    iload 0
+    ldc 1
+   if_icmpgt NOT_IF1
+    ldc 1
+   ireturn
+   goto END_ELSE1
+NOT_IF1:
+END_ELSE1:
     iload 0
     iload 0
+    ldc 1
+   isub
+ invokestatic Test/factorial(I)I
    imul
-    iload 0
-   imul
-    invokevirtual java/io/PrintStream/print(I)V
-
-   getstatic java/lang/System/out Ljava/io/PrintStream;
-    invokevirtual java/io/PrintStream/println()V
-
+   ireturn
   return
-.limit stack 3
-.limit locals 11
+.limit stack 4
+.limit locals 1
 .end method
 
 
 .method public static main([Ljava/lang/String;)V
-    ldc 1
-   istore 0
-invokestatic Test/cubo()V
    getstatic java/lang/System/out Ljava/io/PrintStream;
-    iload 0
+    ldc 5
+ invokestatic Test/factorial(I)I
     invokevirtual java/io/PrintStream/print(I)V
 
    getstatic java/lang/System/out Ljava/io/PrintStream;
@@ -41,5 +41,5 @@ invokestatic Test/cubo()V
 
   return
 .limit stack 2
-.limit locals 11
+.limit locals 1
 .end method
