@@ -8,38 +8,74 @@ return
 .end method
 
 
-.method public static factorial(I)I
-    iload 0
-    ldc 1
-   if_icmpgt NOT_IF1
-    ldc 1
-   ireturn
-   goto END_ELSE1
-NOT_IF1:
-END_ELSE1:
-    iload 0
-    iload 0
-    ldc 1
-   isub
- invokestatic Test/factorial(I)I
-   imul
-   ireturn
-  return
-.limit stack 4
-.limit locals 1
-.end method
-
-
 .method public static main([Ljava/lang/String;)V
    getstatic java/lang/System/out Ljava/io/PrintStream;
-    ldc 5
- invokestatic Test/factorial(I)I
+    ldc "array size?"
+    invokevirtual java/io/PrintStream/print(Ljava/lang/String;)V
+
+   getstatic java/lang/System/out Ljava/io/PrintStream;
+    invokevirtual java/io/PrintStream/println()V
+
+    invokestatic Runtime/readInt()I
+   istore 1
+
+    iload 1
+   newarray int
+   astore 2
+
+    ldc 0
+   istore 3
+
+BEGIN_WHILE_1:
+    iload 3
+   aload 2
+   arraylength
+   if_icmpge END_WHILE_1
+   aload 2
+    iload 3
+    iload 3
+    ldc 1
+   iadd
+    iload 3
+    ldc 1
+   iadd
+   imul
+   iastore
+
+    iload 3
+    ldc 1
+   iadd
+   istore 3
+
+   goto BEGIN_WHILE_1
+END_WHILE_1:
+   aload 2
+   arraylength
+    ldc 1
+   isub
+   istore 3
+
+BEGIN_WHILE_2:
+    iload 3
+    ldc 0
+   if_icmplt END_WHILE_2
+   getstatic java/lang/System/out Ljava/io/PrintStream;
+   aload 2
+    iload 3
+    iaload 
     invokevirtual java/io/PrintStream/print(I)V
 
    getstatic java/lang/System/out Ljava/io/PrintStream;
     invokevirtual java/io/PrintStream/println()V
 
+    iload 3
+    ldc 1
+   isub
+   istore 3
+
+   goto BEGIN_WHILE_2
+END_WHILE_2:
   return
-.limit stack 2
-.limit locals 1
+.limit stack 5
+.limit locals 4
 .end method

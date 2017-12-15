@@ -265,59 +265,58 @@ st_print
 	}
 ;
 st_attrib
-  : NAME
-	    { boolean isarray = false; }
-  	(
-  	 	{
-			isarray = true;
-			emit(" aload "+symbol_table.indexOf($NAME.text), 1);
-		} 
-  		OPEN_B e1 = exp_aritmetic CLOSE_B 
-	)?
-  	ATTRIB
-  	(e2 = exp_aritmetic
-	  	{
-	  		if(symbol_table.indexOf($NAME.text) == -1){
-	  			symbol_table.add($NAME.text);
-	  			symbol_table_not_used.add($NAME.text);
+: NAME ( OPEN_B 
+  {
+     if (symbol_table.indexOf($NAME.text) == -1) {
+       System.err.println("Undefined variable:" + $NAME.text );
+       System.exit(1);
+     }
 
-	  			if($e2.type == 'i')
-	  				symbol_type.add('i');
-	  			else if($e2.type == 'a')
-	  				symbol_type.add('a');
-	  		}
-	  		else
-	  		{
-	  			if(symbol_type.get(symbol_table.indexOf($NAME.text)) != $e2.type)
-				{
-					if($e2.type == 'i')
-					{
-						System.err.println("ERROR: "+$NAME.text+" is an string");
-						errors++;
-					}
-					else
-					{
-						System.err.println("ERROR: "+$NAME.text+" is an integer");
-						errors++;
-					}
-				}
-	  		}
+     int end = symbol_table.indexOf($NAME.text);
 
-	  		if(isarray)
-	  			emit(" iastore "+symbol_table.indexOf($NAME.text), -3);
-	  		else
-				emit(symbol_type.get(symbol_table.indexOf($NAME.text)) + "store " + symbol_table.indexOf($NAME.text), -1);
-	  	}
-	|
-		ARRAY exp_aritmetic
-		{
-  			symbol_table.add($NAME.text);
-  			symbol_type.add('v');
+     if (symbol_type.get(end) != 'v' ) {
+      System.err.println("is not a vector");
+      System.exit('1');
+     }
 
-  			emit(" newarray int", 0);
-  			emit(" astore "+symbol_table.indexOf($NAME.text), -1);
-		}
-  	)
+      emit("aload " + end, +1);
+  }
+
+e2 = exp_aritmetic CLOSE_B )? ATTRIB
+( e1 = exp_aritmetic
+    {
+
+      if(symbol_table.indexOf($NAME.text) == -1){
+        symbol_table.add($NAME.text);
+        symbol_table_not_used.add($NAME.text);
+
+        if($e1.type == 'i')
+          symbol_type.add('i');
+        else if ($e1.type == 'a')
+          symbol_type.add('a');
+        
+      }
+    
+    int end = symbol_table.indexOf($NAME.text);
+    if (symbol_type.get(end) == 'i') {
+      emit("istore " + end, -1);
+    } else if (symbol_type.get(end) == 'a') {
+      emit("astore " + end, -1);
+    } else {
+      emit ("iastore", -3);
+    }
+   System.out.println();
+  }
+
+  |ARRAY exp_aritmetic
+    {       
+        emit("newarray int", 0);
+        symbol_table.add($NAME.text);
+        symbol_type.add('v');
+        emit("astore " + symbol_table.indexOf($NAME.text), -1);
+        System.out.println(); 
+    } 
+  )
 ;
 st_while
   	: WHILE 
@@ -445,61 +444,69 @@ term returns [char type]
 	{ $type = $f1.type; }
 ;
 factor returns [char type]
-    :   NUMBER
-        	{ 
-        		emit(" ldc " + $NUMBER.text, +1);
-        		$type = 'i';
-        	}
-    |	OPEN_P exp_aritmetic CLOSE_P
-	    	{
-	    		$type = $exp_aritmetic.type;
-	    	}
-    |   NAME 
-    	{ boolean isarray = false;}
-    	( OPEN_B 
-			{
-				isarray = true;
-				emit(" aload " + symbol_table.indexOf($NAME.text), +1);	
-			}
-    		
-    		exp_aritmetic 
-    		CLOSE_B
-    	)?
-	    	
-    	{
-		    if(symbol_table.indexOf($NAME.text) >= 0){
-				emit(" " + symbol_type.get(symbol_table.indexOf($NAME.text)) + "load " + symbol_table.indexOf($NAME.text), +1);
-				symbol_table_not_used.remove($NAME.text);
-				$type = symbol_type.get(symbol_table.indexOf($NAME.text));
-			}
-			else
-			{	
-				System.err.println("WARNING: Used non declared variable "+$NAME.text);
-				//errors++;
-			}
-
-			if(isarray)
-				emit(" iaload", 1);
+:   NUMBER
+		{ 
+		  emit(" ldc " + $NUMBER.text, +1);
+		  $type = 'i';
 		}
-    |   READ_INT
-    		{ 
-    			emit(" invokestatic Runtime/readInt()I", +1);
-    			$type = 'i';
-    		}
-    |   READ_STRING
-    		{
-				$type = 'a';
-    		}
-    |   STRING
-	    	{
-	    		emit(" ldc " + $STRING.text, +1); 
-	        	$type = 'a';
-	    	}
+	| OPEN_P exp_aritmetic CLOSE_P
+		{
+		  $type = $exp_aritmetic.type;
+		}
+	|   NAME ( OPEN_B 
+		{
+		     int end = symbol_table.indexOf($NAME.text);
+
+		     if (symbol_type.get(end) != 'v' ) {
+		      System.err.println("is not a vector");
+		      System.exit('1');
+		     }
+
+		      emit("aload " + end, +1);
+		}
+
+	 	exp_aritmetic CLOSE_B )?
+		{
+		  	if(symbol_table.indexOf($NAME.text) >= 0){
+		    
+		    	if ((symbol_type.get(symbol_table.indexOf($NAME.text)) == 'v')) {
+		      		emit(" iaload ", -1);      
+		      		$type = 'i';
+		    	} else {
+		       		emit(" " + symbol_type.get(symbol_table.indexOf($NAME.text)) + "load " + symbol_table.indexOf($NAME.text), +1);
+		       		symbol_table_not_used.remove($NAME.text);
+		    	   	$type = symbol_type.get(symbol_table.indexOf($NAME.text));
+		   		}
+		  	}
+		  	else
+		  	{ 
+		    	System.err.println("WARNING: Used non declared variable "+$NAME.text);
+		    	errors++;
+		  	}
+		}
+	|   READ_INT
+		{ 
+		  emit(" invokestatic Runtime/readInt()I", +1);
+		  $type = 'i';
+		}
+	|   READ_STRING
+		{
+		  $type = 'a';
+		}
+	|   STRING
+		{
+		  emit(" ldc " + $STRING.text, +1); 
+		  $type = 'a';
+		}
 	|   LENGTH NAME
-			{
-				emit(" aload "+symbol_table.indexOf($NAME.text), 1);
-				emit(" arraylength", 0);
-			}
+		{
+		  //ver se esta na tabela de simbolos
+		  int end = symbol_table.indexOf($NAME.text);
+
+		  emit("aload " +  end, +1);
+		  emit("arraylength", +0); 
+		  $type = 'i';
+		}
 	|   NAME OPEN_P (arguments)? CLOSE_P
 			{
 				System.out.println(" invokestatic Test/"+$NAME.text+"("+args+")I");

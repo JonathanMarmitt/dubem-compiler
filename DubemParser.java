@@ -838,8 +838,8 @@ public class DubemParser extends Parser {
 
 	public static class St_attribContext extends ParserRuleContext {
 		public Token NAME;
-		public Exp_aritmeticContext e1;
 		public Exp_aritmeticContext e2;
+		public Exp_aritmeticContext e1;
 		public TerminalNode NAME() { return getToken(DubemParser.NAME, 0); }
 		public TerminalNode ATTRIB() { return getToken(DubemParser.ATTRIB, 0); }
 		public TerminalNode ARRAY() { return getToken(DubemParser.ARRAY, 0); }
@@ -874,27 +874,37 @@ public class DubemParser extends Parser {
 			{
 			setState(134);
 			((St_attribContext)_localctx).NAME = match(NAME);
-			 boolean isarray = false; 
-			setState(141);
+			setState(140);
 			_la = _input.LA(1);
 			if (_la==OPEN_B) {
 				{
-
-							isarray = true;
-							emit(" aload "+symbol_table.indexOf((((St_attribContext)_localctx).NAME!=null?((St_attribContext)_localctx).NAME.getText():null)), 1);
-						
-				setState(137);
+				setState(135);
 				match(OPEN_B);
+
+				     if (symbol_table.indexOf((((St_attribContext)_localctx).NAME!=null?((St_attribContext)_localctx).NAME.getText():null)) == -1) {
+				       System.err.println("Undefined variable:" + (((St_attribContext)_localctx).NAME!=null?((St_attribContext)_localctx).NAME.getText():null) );
+				       System.exit(1);
+				     }
+
+				     int end = symbol_table.indexOf((((St_attribContext)_localctx).NAME!=null?((St_attribContext)_localctx).NAME.getText():null));
+
+				     if (symbol_type.get(end) != 'v' ) {
+				      System.err.println("is not a vector");
+				      System.exit('1');
+				     }
+
+				      emit("aload " + end, +1);
+				  
+				setState(137);
+				((St_attribContext)_localctx).e2 = exp_aritmetic();
 				setState(138);
-				((St_attribContext)_localctx).e1 = exp_aritmetic();
-				setState(139);
 				match(CLOSE_B);
 				}
 			}
 
-			setState(143);
+			setState(142);
 			match(ATTRIB);
-			setState(151);
+			setState(150);
 			switch (_input.LA(1)) {
 			case OPEN_P:
 			case LENGTH:
@@ -904,55 +914,46 @@ public class DubemParser extends Parser {
 			case NUMBER:
 			case NAME:
 				{
-				setState(144);
-				((St_attribContext)_localctx).e2 = exp_aritmetic();
+				setState(143);
+				((St_attribContext)_localctx).e1 = exp_aritmetic();
 
-					  		if(symbol_table.indexOf((((St_attribContext)_localctx).NAME!=null?((St_attribContext)_localctx).NAME.getText():null)) == -1){
-					  			symbol_table.add((((St_attribContext)_localctx).NAME!=null?((St_attribContext)_localctx).NAME.getText():null));
-					  			symbol_table_not_used.add((((St_attribContext)_localctx).NAME!=null?((St_attribContext)_localctx).NAME.getText():null));
 
-					  			if(((St_attribContext)_localctx).e2.type == 'i')
-					  				symbol_type.add('i');
-					  			else if(((St_attribContext)_localctx).e2.type == 'a')
-					  				symbol_type.add('a');
-					  		}
-					  		else
-					  		{
-					  			if(symbol_type.get(symbol_table.indexOf((((St_attribContext)_localctx).NAME!=null?((St_attribContext)_localctx).NAME.getText():null))) != ((St_attribContext)_localctx).e2.type)
-								{
-									if(((St_attribContext)_localctx).e2.type == 'i')
-									{
-										System.err.println("ERROR: "+(((St_attribContext)_localctx).NAME!=null?((St_attribContext)_localctx).NAME.getText():null)+" is an string");
-										errors++;
-									}
-									else
-									{
-										System.err.println("ERROR: "+(((St_attribContext)_localctx).NAME!=null?((St_attribContext)_localctx).NAME.getText():null)+" is an integer");
-										errors++;
-									}
-								}
-					  		}
+				      if(symbol_table.indexOf((((St_attribContext)_localctx).NAME!=null?((St_attribContext)_localctx).NAME.getText():null)) == -1){
+				        symbol_table.add((((St_attribContext)_localctx).NAME!=null?((St_attribContext)_localctx).NAME.getText():null));
+				        symbol_table_not_used.add((((St_attribContext)_localctx).NAME!=null?((St_attribContext)_localctx).NAME.getText():null));
 
-					  		if(isarray)
-					  			emit(" iastore "+symbol_table.indexOf((((St_attribContext)_localctx).NAME!=null?((St_attribContext)_localctx).NAME.getText():null)), -3);
-					  		else
-								emit(symbol_type.get(symbol_table.indexOf((((St_attribContext)_localctx).NAME!=null?((St_attribContext)_localctx).NAME.getText():null))) + "store " + symbol_table.indexOf((((St_attribContext)_localctx).NAME!=null?((St_attribContext)_localctx).NAME.getText():null)), -1);
-					  	
+				        if(((St_attribContext)_localctx).e1.type == 'i')
+				          symbol_type.add('i');
+				        else if (((St_attribContext)_localctx).e1.type == 'a')
+				          symbol_type.add('a');
+				        
+				      }
+				    
+				    int end = symbol_table.indexOf((((St_attribContext)_localctx).NAME!=null?((St_attribContext)_localctx).NAME.getText():null));
+				    if (symbol_type.get(end) == 'i') {
+				      emit("istore " + end, -1);
+				    } else if (symbol_type.get(end) == 'a') {
+				      emit("astore " + end, -1);
+				    } else {
+				      emit ("iastore", -3);
+				    }
+				   System.out.println();
+				  
 				}
 				break;
 			case ARRAY:
 				{
-				setState(147);
+				setState(146);
 				match(ARRAY);
-				setState(148);
+				setState(147);
 				exp_aritmetic();
-
-				  			symbol_table.add((((St_attribContext)_localctx).NAME!=null?((St_attribContext)_localctx).NAME.getText():null));
-				  			symbol_type.add('v');
-
-				  			emit(" newarray int", 0);
-				  			emit(" astore "+symbol_table.indexOf((((St_attribContext)_localctx).NAME!=null?((St_attribContext)_localctx).NAME.getText():null)), -1);
-						
+				       
+				        emit("newarray int", 0);
+				        symbol_table.add((((St_attribContext)_localctx).NAME!=null?((St_attribContext)_localctx).NAME.getText():null));
+				        symbol_type.add('v');
+				        emit("astore " + symbol_table.indexOf((((St_attribContext)_localctx).NAME!=null?((St_attribContext)_localctx).NAME.getText():null)), -1);
+				        System.out.println(); 
+				    
 				}
 				break;
 			default:
@@ -1009,37 +1010,37 @@ public class DubemParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(153);
+			setState(152);
 			match(WHILE);
 
 			  		int local = ++count_while;
 			  		System.out.println("BEGIN_WHILE_"+local+":");
 			  	
-			setState(155);
+			setState(154);
 			((St_whileContext)_localctx).s = exp_comparison();
-			setState(156);
+			setState(155);
 			match(NL);
 
 			  		emit(((St_whileContext)_localctx).s.bytecode + " END_WHILE_" +local, -2);
 			  	
-			setState(161);
+			setState(160);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
 			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << RETURN) | (1L << PRINT) | (1L << WHILE) | (1L << IF) | (1L << FOR) | (1L << NAME) | (1L << NL))) != 0)) {
 				{
 				{
-				setState(158);
+				setState(157);
 				statement();
 				}
 				}
-				setState(163);
+				setState(162);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 			}
 			 emit("goto BEGIN_WHILE_"+local, 0); 
-			setState(165);
+			setState(164);
 			match(END);
-			setState(166);
+			setState(165);
 			match(NL);
 			 System.out.println("END_WHILE_"+local+":"); 
 			}
@@ -1094,25 +1095,25 @@ public class DubemParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(169);
+			setState(168);
 			match(IF);
 			 int local = ++count_if; 
-			setState(171);
+			setState(170);
 			((St_ifContext)_localctx).s = exp_comparison();
-			setState(172);
+			setState(171);
 			match(NL);
 			 emit(((St_ifContext)_localctx).s.bytecode + " NOT_IF"+local, -2); 
-			setState(177);
+			setState(176);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
 			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << RETURN) | (1L << PRINT) | (1L << WHILE) | (1L << IF) | (1L << FOR) | (1L << NAME) | (1L << NL))) != 0)) {
 				{
 				{
-				setState(174);
+				setState(173);
 				statement();
 				}
 				}
-				setState(179);
+				setState(178);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 			}
@@ -1120,25 +1121,25 @@ public class DubemParser extends Parser {
 					emit("goto END_ELSE"+local, 0);
 					System.out.println("NOT_IF"+local+":");
 				
-			setState(189);
+			setState(188);
 			_la = _input.LA(1);
 			if (_la==ELSE) {
 				{
-				setState(181);
+				setState(180);
 				match(ELSE);
-				setState(182);
+				setState(181);
 				match(NL);
-				setState(186);
+				setState(185);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 				while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << RETURN) | (1L << PRINT) | (1L << WHILE) | (1L << IF) | (1L << FOR) | (1L << NAME) | (1L << NL))) != 0)) {
 					{
 					{
-					setState(183);
+					setState(182);
 					statement();
 					}
 					}
-					setState(188);
+					setState(187);
 					_errHandler.sync(this);
 					_la = _input.LA(1);
 				}
@@ -1146,9 +1147,9 @@ public class DubemParser extends Parser {
 			}
 
 			 System.out.println("END_ELSE"+local+":"); 
-			setState(192);
+			setState(191);
 			match(END);
-			setState(193);
+			setState(192);
 			match(NL);
 			}
 		}
@@ -1211,42 +1212,42 @@ public class DubemParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(195);
+			setState(194);
 			match(FOR);
 			 int local = ++count_for; 
-			setState(197);
+			setState(196);
 			st_attrib();
-			setState(198);
+			setState(197);
 			match(SEMICOLON);
 			 System.out.println("FOR_COMP_"+local+":"); 
-			setState(200);
+			setState(199);
 			((St_forContext)_localctx).s = exp_comparison();
-			setState(201);
+			setState(200);
 			match(SEMICOLON);
 			 
 						emit(((St_forContext)_localctx).s.bytecode + " END_FOR_"+local, -2);
 						emit("goto FOR_"+local, 0);
 						System.out.println("FOR_INC_"+local+":");
 					
-			setState(203);
+			setState(202);
 			st_attrib();
-			setState(204);
+			setState(203);
 			match(NL);
 			 
 						emit("goto FOR_COMP_"+local, 0);
 						System.out.println("FOR_"+local+":"); 
 					
-			setState(209);
+			setState(208);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
 			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << RETURN) | (1L << PRINT) | (1L << WHILE) | (1L << IF) | (1L << FOR) | (1L << NAME) | (1L << NL))) != 0)) {
 				{
 				{
-				setState(206);
+				setState(205);
 				statement();
 				}
 				}
-				setState(211);
+				setState(210);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 			}
@@ -1254,9 +1255,9 @@ public class DubemParser extends Parser {
 						emit("goto FOR_INC_"+local, 0);
 						System.out.println("END_FOR_"+local+":"); 
 					
-			setState(213);
+			setState(212);
 			match(END);
-			setState(214);
+			setState(213);
 			match(NL);
 			}
 		}
@@ -1301,22 +1302,22 @@ public class DubemParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(216);
+			setState(215);
 			((St_callContext)_localctx).NAME = match(NAME);
-			setState(217);
+			setState(216);
 			match(OPEN_P);
-			setState(219);
+			setState(218);
 			_la = _input.LA(1);
 			if ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << OPEN_P) | (1L << LENGTH) | (1L << READ_INT) | (1L << READ_STRING) | (1L << STRING) | (1L << NUMBER) | (1L << NAME))) != 0)) {
 				{
-				setState(218);
+				setState(217);
 				arguments();
 				}
 			}
 
-			setState(221);
+			setState(220);
 			match(CLOSE_P);
-			setState(222);
+			setState(221);
 			match(NL);
 
 					System.out.println("invokestatic Test/"+(((St_callContext)_localctx).NAME!=null?((St_callContext)_localctx).NAME.getText():null)+"("+args+")V");
@@ -1361,15 +1362,15 @@ public class DubemParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(225);
+			setState(224);
 			match(RETURN);
-			setState(226);
+			setState(225);
 			exp_aritmetic();
 
 					has_return = true;
 					emit("ireturn", 0);
 				
-			setState(228);
+			setState(227);
 			match(NL);
 			}
 		}
@@ -1416,27 +1417,27 @@ public class DubemParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(230);
+			setState(229);
 			exp_aritmetic();
 
 						args = "I";
 					
-			setState(238);
+			setState(237);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
 			while (_la==COMMA) {
 				{
 				{
-				setState(232);
+				setState(231);
 				match(COMMA);
-				setState(233);
+				setState(232);
 				exp_aritmetic();
 
 								args += "I";
 							
 				}
 				}
-				setState(240);
+				setState(239);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 			}
@@ -1491,9 +1492,9 @@ public class DubemParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(241);
+			setState(240);
 			((Exp_comparisonContext)_localctx).e1 = exp_aritmetic();
-			setState(242);
+			setState(241);
 			((Exp_comparisonContext)_localctx).op = _input.LT(1);
 			_la = _input.LA(1);
 			if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << EQ) | (1L << NE) | (1L << LT) | (1L << LE) | (1L << GT) | (1L << GE))) != 0)) ) {
@@ -1501,7 +1502,7 @@ public class DubemParser extends Parser {
 			} else {
 				consume();
 			}
-			setState(243);
+			setState(242);
 			((Exp_comparisonContext)_localctx).e2 = exp_aritmetic();
 
 					if(((Exp_comparisonContext)_localctx).e1.type != ((Exp_comparisonContext)_localctx).e2.type)
@@ -1570,15 +1571,15 @@ public class DubemParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(246);
+			setState(245);
 			((Exp_aritmeticContext)_localctx).t1 = term();
-			setState(253);
+			setState(252);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
 			while (_la==PLUS || _la==MINUS) {
 				{
 				{
-				setState(247);
+				setState(246);
 				((Exp_aritmeticContext)_localctx).op = _input.LT(1);
 				_la = _input.LA(1);
 				if ( !(_la==PLUS || _la==MINUS) ) {
@@ -1586,7 +1587,7 @@ public class DubemParser extends Parser {
 				} else {
 					consume();
 				}
-				setState(248);
+				setState(247);
 				((Exp_aritmeticContext)_localctx).t2 = term();
 				 
 							if(((Exp_aritmeticContext)_localctx).t1.type != ((Exp_aritmeticContext)_localctx).t2.type)
@@ -1599,7 +1600,7 @@ public class DubemParser extends Parser {
 						
 				}
 				}
-				setState(255);
+				setState(254);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 			}
@@ -1661,15 +1662,15 @@ public class DubemParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(258);
+			setState(257);
 			((TermContext)_localctx).f1 = factor();
-			setState(265);
+			setState(264);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
 			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << TIMES) | (1L << OVER) | (1L << REMAINDER))) != 0)) {
 				{
 				{
-				setState(259);
+				setState(258);
 				((TermContext)_localctx).op = _input.LT(1);
 				_la = _input.LA(1);
 				if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << TIMES) | (1L << OVER) | (1L << REMAINDER))) != 0)) ) {
@@ -1677,7 +1678,7 @@ public class DubemParser extends Parser {
 				} else {
 					consume();
 				}
-				setState(260);
+				setState(259);
 				((TermContext)_localctx).f2 = factor();
 				 
 							if(((TermContext)_localctx).f1.type == 'a' || ((TermContext)_localctx).f2.type == 'a')
@@ -1691,7 +1692,7 @@ public class DubemParser extends Parser {
 						
 				}
 				}
-				setState(267);
+				setState(266);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 			}
@@ -1750,136 +1751,148 @@ public class DubemParser extends Parser {
 		enterRule(_localctx, 34, RULE_factor);
 		int _la;
 		try {
-			setState(303);
+			setState(301);
 			_errHandler.sync(this);
 			switch ( getInterpreter().adaptivePredict(_input,23,_ctx) ) {
 			case 1:
 				enterOuterAlt(_localctx, 1);
 				{
-				setState(270);
+				setState(269);
 				((FactorContext)_localctx).NUMBER = match(NUMBER);
 				 
-				        		emit(" ldc " + (((FactorContext)_localctx).NUMBER!=null?((FactorContext)_localctx).NUMBER.getText():null), +1);
-				        		((FactorContext)_localctx).type =  'i';
-				        	
+						  emit(" ldc " + (((FactorContext)_localctx).NUMBER!=null?((FactorContext)_localctx).NUMBER.getText():null), +1);
+						  ((FactorContext)_localctx).type =  'i';
+						
 				}
 				break;
 			case 2:
 				enterOuterAlt(_localctx, 2);
 				{
-				setState(272);
+				setState(271);
 				match(OPEN_P);
-				setState(273);
+				setState(272);
 				((FactorContext)_localctx).exp_aritmetic = exp_aritmetic();
-				setState(274);
+				setState(273);
 				match(CLOSE_P);
 
-					    		((FactorContext)_localctx).type =  ((FactorContext)_localctx).exp_aritmetic.type;
-					    	
+						  ((FactorContext)_localctx).type =  ((FactorContext)_localctx).exp_aritmetic.type;
+						
 				}
 				break;
 			case 3:
 				enterOuterAlt(_localctx, 3);
 				{
-				setState(277);
+				setState(276);
 				((FactorContext)_localctx).NAME = match(NAME);
-				 boolean isarray = false;
-				setState(284);
+				setState(282);
 				_la = _input.LA(1);
 				if (_la==OPEN_B) {
 					{
-					setState(279);
+					setState(277);
 					match(OPEN_B);
 
-									isarray = true;
-									emit(" aload " + symbol_table.indexOf((((FactorContext)_localctx).NAME!=null?((FactorContext)_localctx).NAME.getText():null)), +1);	
-								
-					setState(281);
+							     int end = symbol_table.indexOf((((FactorContext)_localctx).NAME!=null?((FactorContext)_localctx).NAME.getText():null));
+
+							     if (symbol_type.get(end) != 'v' ) {
+							      System.err.println("is not a vector");
+							      System.exit('1');
+							     }
+
+							      emit("aload " + end, +1);
+							
+					setState(279);
 					exp_aritmetic();
-					setState(282);
+					setState(280);
 					match(CLOSE_B);
 					}
 				}
 
 
-						    if(symbol_table.indexOf((((FactorContext)_localctx).NAME!=null?((FactorContext)_localctx).NAME.getText():null)) >= 0){
-								emit(" " + symbol_type.get(symbol_table.indexOf((((FactorContext)_localctx).NAME!=null?((FactorContext)_localctx).NAME.getText():null))) + "load " + symbol_table.indexOf((((FactorContext)_localctx).NAME!=null?((FactorContext)_localctx).NAME.getText():null)), +1);
-								symbol_table_not_used.remove((((FactorContext)_localctx).NAME!=null?((FactorContext)_localctx).NAME.getText():null));
-								((FactorContext)_localctx).type =  symbol_type.get(symbol_table.indexOf((((FactorContext)_localctx).NAME!=null?((FactorContext)_localctx).NAME.getText():null)));
-							}
-							else
-							{	
-								System.err.println("WARNING: Used non declared variable "+(((FactorContext)_localctx).NAME!=null?((FactorContext)_localctx).NAME.getText():null));
-								//errors++;
-							}
-
-							if(isarray)
-								emit(" iaload", 1);
+						  	if(symbol_table.indexOf((((FactorContext)_localctx).NAME!=null?((FactorContext)_localctx).NAME.getText():null)) >= 0){
+						    
+						    	if ((symbol_type.get(symbol_table.indexOf((((FactorContext)_localctx).NAME!=null?((FactorContext)_localctx).NAME.getText():null))) == 'v')) {
+						      		emit(" iaload ", -1);      
+						      		((FactorContext)_localctx).type =  'i';
+						    	} else {
+						       		emit(" " + symbol_type.get(symbol_table.indexOf((((FactorContext)_localctx).NAME!=null?((FactorContext)_localctx).NAME.getText():null))) + "load " + symbol_table.indexOf((((FactorContext)_localctx).NAME!=null?((FactorContext)_localctx).NAME.getText():null)), +1);
+						       		symbol_table_not_used.remove((((FactorContext)_localctx).NAME!=null?((FactorContext)_localctx).NAME.getText():null));
+						    	   	((FactorContext)_localctx).type =  symbol_type.get(symbol_table.indexOf((((FactorContext)_localctx).NAME!=null?((FactorContext)_localctx).NAME.getText():null)));
+						   		}
+						  	}
+						  	else
+						  	{ 
+						    	System.err.println("WARNING: Used non declared variable "+(((FactorContext)_localctx).NAME!=null?((FactorContext)_localctx).NAME.getText():null));
+						    	errors++;
+						  	}
 						
 				}
 				break;
 			case 4:
 				enterOuterAlt(_localctx, 4);
 				{
-				setState(287);
+				setState(285);
 				match(READ_INT);
 				 
-				    			emit(" invokestatic Runtime/readInt()I", +1);
-				    			((FactorContext)_localctx).type =  'i';
-				    		
+						  emit(" invokestatic Runtime/readInt()I", +1);
+						  ((FactorContext)_localctx).type =  'i';
+						
 				}
 				break;
 			case 5:
 				enterOuterAlt(_localctx, 5);
 				{
-				setState(289);
+				setState(287);
 				match(READ_STRING);
 
-								((FactorContext)_localctx).type =  'a';
-				    		
+						  ((FactorContext)_localctx).type =  'a';
+						
 				}
 				break;
 			case 6:
 				enterOuterAlt(_localctx, 6);
 				{
-				setState(291);
+				setState(289);
 				((FactorContext)_localctx).STRING = match(STRING);
 
-					    		emit(" ldc " + (((FactorContext)_localctx).STRING!=null?((FactorContext)_localctx).STRING.getText():null), +1); 
-					        	((FactorContext)_localctx).type =  'a';
-					    	
+						  emit(" ldc " + (((FactorContext)_localctx).STRING!=null?((FactorContext)_localctx).STRING.getText():null), +1); 
+						  ((FactorContext)_localctx).type =  'a';
+						
 				}
 				break;
 			case 7:
 				enterOuterAlt(_localctx, 7);
 				{
-				setState(293);
+				setState(291);
 				match(LENGTH);
-				setState(294);
+				setState(292);
 				((FactorContext)_localctx).NAME = match(NAME);
 
-								emit(" aload "+symbol_table.indexOf((((FactorContext)_localctx).NAME!=null?((FactorContext)_localctx).NAME.getText():null)), 1);
-								emit(" arraylength", 0);
-							
+						  //ver se esta na tabela de simbolos
+						  int end = symbol_table.indexOf((((FactorContext)_localctx).NAME!=null?((FactorContext)_localctx).NAME.getText():null));
+
+						  emit("aload " +  end, +1);
+						  emit("arraylength", +0); 
+						  ((FactorContext)_localctx).type =  'i';
+						
 				}
 				break;
 			case 8:
 				enterOuterAlt(_localctx, 8);
 				{
-				setState(296);
+				setState(294);
 				((FactorContext)_localctx).NAME = match(NAME);
-				setState(297);
+				setState(295);
 				match(OPEN_P);
-				setState(299);
+				setState(297);
 				_la = _input.LA(1);
 				if ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << OPEN_P) | (1L << LENGTH) | (1L << READ_INT) | (1L << READ_STRING) | (1L << STRING) | (1L << NUMBER) | (1L << NAME))) != 0)) {
 					{
-					setState(298);
+					setState(296);
 					arguments();
 					}
 				}
 
-				setState(301);
+				setState(299);
 				match(CLOSE_P);
 
 								System.out.println(" invokestatic Test/"+(((FactorContext)_localctx).NAME!=null?((FactorContext)_localctx).NAME.getText():null)+"("+args+")I");
@@ -1902,7 +1915,7 @@ public class DubemParser extends Parser {
 	}
 
 	public static final String _serializedATN =
-		"\3\u0430\ud6d1\u8206\uad2d\u4417\uaef1\u8d80\uaadd\3\'\u0134\4\2\t\2\4"+
+		"\3\u0430\ud6d1\u8206\uad2d\u4417\uaef1\u8d80\uaadd\3\'\u0132\4\2\t\2\4"+
 		"\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7\4\b\t\b\4\t\t\t\4\n\t\n\4\13\t"+
 		"\13\4\f\t\f\4\r\t\r\4\16\t\16\4\17\t\17\4\20\t\20\4\21\t\21\4\22\t\22"+
 		"\4\23\t\23\3\2\3\2\3\2\3\2\7\2+\n\2\f\2\16\2.\13\2\3\2\3\2\3\3\3\3\3\3"+
@@ -1911,99 +1924,98 @@ public class DubemParser extends Parser {
 		"\4\3\4\3\4\3\4\3\4\3\5\3\5\3\5\3\5\3\5\7\5^\n\5\f\5\16\5a\13\5\3\6\3\6"+
 		"\7\6e\n\6\f\6\16\6h\13\6\3\6\3\6\3\7\3\7\3\7\3\7\3\7\3\7\3\7\3\7\3\7\3"+
 		"\7\5\7v\n\7\3\b\3\b\3\b\3\b\3\b\3\b\3\b\3\b\3\b\7\b\u0081\n\b\f\b\16\b"+
-		"\u0084\13\b\3\b\3\b\3\b\3\t\3\t\3\t\3\t\3\t\3\t\3\t\5\t\u0090\n\t\3\t"+
-		"\3\t\3\t\3\t\3\t\3\t\3\t\3\t\5\t\u009a\n\t\3\n\3\n\3\n\3\n\3\n\3\n\7\n"+
-		"\u00a2\n\n\f\n\16\n\u00a5\13\n\3\n\3\n\3\n\3\n\3\n\3\13\3\13\3\13\3\13"+
-		"\3\13\3\13\7\13\u00b2\n\13\f\13\16\13\u00b5\13\13\3\13\3\13\3\13\3\13"+
-		"\7\13\u00bb\n\13\f\13\16\13\u00be\13\13\5\13\u00c0\n\13\3\13\3\13\3\13"+
-		"\3\13\3\f\3\f\3\f\3\f\3\f\3\f\3\f\3\f\3\f\3\f\3\f\3\f\7\f\u00d2\n\f\f"+
-		"\f\16\f\u00d5\13\f\3\f\3\f\3\f\3\f\3\r\3\r\3\r\5\r\u00de\n\r\3\r\3\r\3"+
-		"\r\3\r\3\16\3\16\3\16\3\16\3\16\3\17\3\17\3\17\3\17\3\17\3\17\7\17\u00ef"+
-		"\n\17\f\17\16\17\u00f2\13\17\3\20\3\20\3\20\3\20\3\20\3\21\3\21\3\21\3"+
-		"\21\3\21\7\21\u00fe\n\21\f\21\16\21\u0101\13\21\3\21\3\21\3\22\3\22\3"+
-		"\22\3\22\3\22\7\22\u010a\n\22\f\22\16\22\u010d\13\22\3\22\3\22\3\23\3"+
-		"\23\3\23\3\23\3\23\3\23\3\23\3\23\3\23\3\23\3\23\3\23\3\23\3\23\5\23\u011f"+
-		"\n\23\3\23\3\23\3\23\3\23\3\23\3\23\3\23\3\23\3\23\3\23\3\23\3\23\3\23"+
-		"\5\23\u012e\n\23\3\23\3\23\5\23\u0132\n\23\3\23\2\2\24\2\4\6\b\n\f\16"+
-		"\20\22\24\26\30\32\34\36 \"$\2\5\3\2\17\24\3\2\3\4\3\2\5\7\u0146\2&\3"+
-		"\2\2\2\4\61\3\2\2\2\6D\3\2\2\2\bX\3\2\2\2\nb\3\2\2\2\fu\3\2\2\2\16w\3"+
-		"\2\2\2\20\u0088\3\2\2\2\22\u009b\3\2\2\2\24\u00ab\3\2\2\2\26\u00c5\3\2"+
-		"\2\2\30\u00da\3\2\2\2\32\u00e3\3\2\2\2\34\u00e8\3\2\2\2\36\u00f3\3\2\2"+
-		"\2 \u00f8\3\2\2\2\"\u0104\3\2\2\2$\u0131\3\2\2\2&,\b\2\1\2\'+\5\4\3\2"+
-		"(+\5\6\4\2)+\7\'\2\2*\'\3\2\2\2*(\3\2\2\2*)\3\2\2\2+.\3\2\2\2,*\3\2\2"+
-		"\2,-\3\2\2\2-/\3\2\2\2.,\3\2\2\2/\60\5\n\6\2\60\3\3\2\2\2\61\62\7\27\2"+
-		"\2\62\63\7%\2\2\63\65\7\b\2\2\64\66\5\b\5\2\65\64\3\2\2\2\65\66\3\2\2"+
-		"\2\66\67\3\2\2\2\678\7\t\2\289\7\'\2\29=\b\3\1\2:<\5\f\7\2;:\3\2\2\2<"+
-		"?\3\2\2\2=;\3\2\2\2=>\3\2\2\2>@\3\2\2\2?=\3\2\2\2@A\7 \2\2AB\7\'\2\2B"+
-		"C\b\3\1\2C\5\3\2\2\2DE\7\30\2\2EF\7%\2\2FH\7\b\2\2GI\5\b\5\2HG\3\2\2\2"+
-		"HI\3\2\2\2IJ\3\2\2\2JK\7\t\2\2KL\7\'\2\2LP\b\4\1\2MO\5\f\7\2NM\3\2\2\2"+
-		"OR\3\2\2\2PN\3\2\2\2PQ\3\2\2\2QS\3\2\2\2RP\3\2\2\2ST\b\4\1\2TU\7 \2\2"+
-		"UV\7\'\2\2VW\b\4\1\2W\7\3\2\2\2XY\7%\2\2Y_\b\5\1\2Z[\7\13\2\2[\\\7%\2"+
-		"\2\\^\b\5\1\2]Z\3\2\2\2^a\3\2\2\2_]\3\2\2\2_`\3\2\2\2`\t\3\2\2\2a_\3\2"+
-		"\2\2bf\b\6\1\2ce\5\f\7\2dc\3\2\2\2eh\3\2\2\2fd\3\2\2\2fg\3\2\2\2gi\3\2"+
-		"\2\2hf\3\2\2\2ij\b\6\1\2j\13\3\2\2\2kv\7\'\2\2lv\5\16\b\2mn\5\20\t\2n"+
-		"o\7\'\2\2ov\3\2\2\2pv\5\22\n\2qv\5\24\13\2rv\5\26\f\2sv\5\30\r\2tv\5\32"+
-		"\16\2uk\3\2\2\2ul\3\2\2\2um\3\2\2\2up\3\2\2\2uq\3\2\2\2ur\3\2\2\2us\3"+
-		"\2\2\2ut\3\2\2\2v\r\3\2\2\2wx\7\32\2\2xy\b\b\1\2yz\5 \21\2z\u0082\b\b"+
-		"\1\2{|\7\13\2\2|}\b\b\1\2}~\5 \21\2~\177\b\b\1\2\177\u0081\3\2\2\2\u0080"+
-		"{\3\2\2\2\u0081\u0084\3\2\2\2\u0082\u0080\3\2\2\2\u0082\u0083\3\2\2\2"+
-		"\u0083\u0085\3\2\2\2\u0084\u0082\3\2\2\2\u0085\u0086\7\'\2\2\u0086\u0087"+
-		"\b\b\1\2\u0087\17\3\2\2\2\u0088\u0089\7%\2\2\u0089\u008f\b\t\1\2\u008a"+
-		"\u008b\b\t\1\2\u008b\u008c\7\r\2\2\u008c\u008d\5 \21\2\u008d\u008e\7\16"+
-		"\2\2\u008e\u0090\3\2\2\2\u008f\u008a\3\2\2\2\u008f\u0090\3\2\2\2\u0090"+
-		"\u0091\3\2\2\2\u0091\u0099\7\n\2\2\u0092\u0093\5 \21\2\u0093\u0094\b\t"+
-		"\1\2\u0094\u009a\3\2\2\2\u0095\u0096\7\25\2\2\u0096\u0097\5 \21\2\u0097"+
-		"\u0098\b\t\1\2\u0098\u009a\3\2\2\2\u0099\u0092\3\2\2\2\u0099\u0095\3\2"+
-		"\2\2\u009a\21\3\2\2\2\u009b\u009c\7\34\2\2\u009c\u009d\b\n\1\2\u009d\u009e"+
-		"\5\36\20\2\u009e\u009f\7\'\2\2\u009f\u00a3\b\n\1\2\u00a0\u00a2\5\f\7\2"+
-		"\u00a1\u00a0\3\2\2\2\u00a2\u00a5\3\2\2\2\u00a3\u00a1\3\2\2\2\u00a3\u00a4"+
-		"\3\2\2\2\u00a4\u00a6\3\2\2\2\u00a5\u00a3\3\2\2\2\u00a6\u00a7\b\n\1\2\u00a7"+
-		"\u00a8\7 \2\2\u00a8\u00a9\7\'\2\2\u00a9\u00aa\b\n\1\2\u00aa\23\3\2\2\2"+
-		"\u00ab\u00ac\7\35\2\2\u00ac\u00ad\b\13\1\2\u00ad\u00ae\5\36\20\2\u00ae"+
-		"\u00af\7\'\2\2\u00af\u00b3\b\13\1\2\u00b0\u00b2\5\f\7\2\u00b1\u00b0\3"+
-		"\2\2\2\u00b2\u00b5\3\2\2\2\u00b3\u00b1\3\2\2\2\u00b3\u00b4\3\2\2\2\u00b4"+
-		"\u00b6\3\2\2\2\u00b5\u00b3\3\2\2\2\u00b6\u00bf\b\13\1\2\u00b7\u00b8\7"+
-		"\36\2\2\u00b8\u00bc\7\'\2\2\u00b9\u00bb\5\f\7\2\u00ba\u00b9\3\2\2\2\u00bb"+
-		"\u00be\3\2\2\2\u00bc\u00ba\3\2\2\2\u00bc\u00bd\3\2\2\2\u00bd\u00c0\3\2"+
-		"\2\2\u00be\u00bc\3\2\2\2\u00bf\u00b7\3\2\2\2\u00bf\u00c0\3\2\2\2\u00c0"+
-		"\u00c1\3\2\2\2\u00c1\u00c2\b\13\1\2\u00c2\u00c3\7 \2\2\u00c3\u00c4\7\'"+
-		"\2\2\u00c4\25\3\2\2\2\u00c5\u00c6\7\37\2\2\u00c6\u00c7\b\f\1\2\u00c7\u00c8"+
-		"\5\20\t\2\u00c8\u00c9\7\f\2\2\u00c9\u00ca\b\f\1\2\u00ca\u00cb\5\36\20"+
-		"\2\u00cb\u00cc\7\f\2\2\u00cc\u00cd\b\f\1\2\u00cd\u00ce\5\20\t\2\u00ce"+
-		"\u00cf\7\'\2\2\u00cf\u00d3\b\f\1\2\u00d0\u00d2\5\f\7\2\u00d1\u00d0\3\2"+
-		"\2\2\u00d2\u00d5\3\2\2\2\u00d3\u00d1\3\2\2\2\u00d3\u00d4\3\2\2\2\u00d4"+
-		"\u00d6\3\2\2\2\u00d5\u00d3\3\2\2\2\u00d6\u00d7\b\f\1\2\u00d7\u00d8\7 "+
-		"\2\2\u00d8\u00d9\7\'\2\2\u00d9\27\3\2\2\2\u00da\u00db\7%\2\2\u00db\u00dd"+
-		"\7\b\2\2\u00dc\u00de\5\34\17\2\u00dd\u00dc\3\2\2\2\u00dd\u00de\3\2\2\2"+
-		"\u00de\u00df\3\2\2\2\u00df\u00e0\7\t\2\2\u00e0\u00e1\7\'\2\2\u00e1\u00e2"+
-		"\b\r\1\2\u00e2\31\3\2\2\2\u00e3\u00e4\7\31\2\2\u00e4\u00e5\5 \21\2\u00e5"+
-		"\u00e6\b\16\1\2\u00e6\u00e7\7\'\2\2\u00e7\33\3\2\2\2\u00e8\u00e9\5 \21"+
-		"\2\u00e9\u00f0\b\17\1\2\u00ea\u00eb\7\13\2\2\u00eb\u00ec\5 \21\2\u00ec"+
-		"\u00ed\b\17\1\2\u00ed\u00ef\3\2\2\2\u00ee\u00ea\3\2\2\2\u00ef\u00f2\3"+
-		"\2\2\2\u00f0\u00ee\3\2\2\2\u00f0\u00f1\3\2\2\2\u00f1\35\3\2\2\2\u00f2"+
-		"\u00f0\3\2\2\2\u00f3\u00f4\5 \21\2\u00f4\u00f5\t\2\2\2\u00f5\u00f6\5 "+
-		"\21\2\u00f6\u00f7\b\20\1\2\u00f7\37\3\2\2\2\u00f8\u00ff\5\"\22\2\u00f9"+
-		"\u00fa\t\3\2\2\u00fa\u00fb\5\"\22\2\u00fb\u00fc\b\21\1\2\u00fc\u00fe\3"+
-		"\2\2\2\u00fd\u00f9\3\2\2\2\u00fe\u0101\3\2\2\2\u00ff\u00fd\3\2\2\2\u00ff"+
-		"\u0100\3\2\2\2\u0100\u0102\3\2\2\2\u0101\u00ff\3\2\2\2\u0102\u0103\b\21"+
-		"\1\2\u0103!\3\2\2\2\u0104\u010b\5$\23\2\u0105\u0106\t\4\2\2\u0106\u0107"+
-		"\5$\23\2\u0107\u0108\b\22\1\2\u0108\u010a\3\2\2\2\u0109\u0105\3\2\2\2"+
-		"\u010a\u010d\3\2\2\2\u010b\u0109\3\2\2\2\u010b\u010c\3\2\2\2\u010c\u010e"+
-		"\3\2\2\2\u010d\u010b\3\2\2\2\u010e\u010f\b\22\1\2\u010f#\3\2\2\2\u0110"+
-		"\u0111\7$\2\2\u0111\u0132\b\23\1\2\u0112\u0113\7\b\2\2\u0113\u0114\5 "+
-		"\21\2\u0114\u0115\7\t\2\2\u0115\u0116\b\23\1\2\u0116\u0132\3\2\2\2\u0117"+
-		"\u0118\7%\2\2\u0118\u011e\b\23\1\2\u0119\u011a\7\r\2\2\u011a\u011b\b\23"+
-		"\1\2\u011b\u011c\5 \21\2\u011c\u011d\7\16\2\2\u011d\u011f\3\2\2\2\u011e"+
-		"\u0119\3\2\2\2\u011e\u011f\3\2\2\2\u011f\u0120\3\2\2\2\u0120\u0132\b\23"+
-		"\1\2\u0121\u0122\7\33\2\2\u0122\u0132\b\23\1\2\u0123\u0124\7!\2\2\u0124"+
-		"\u0132\b\23\1\2\u0125\u0126\7\"\2\2\u0126\u0132\b\23\1\2\u0127\u0128\7"+
-		"\26\2\2\u0128\u0129\7%\2\2\u0129\u0132\b\23\1\2\u012a\u012b\7%\2\2\u012b"+
-		"\u012d\7\b\2\2\u012c\u012e\5\34\17\2\u012d\u012c\3\2\2\2\u012d\u012e\3"+
-		"\2\2\2\u012e\u012f\3\2\2\2\u012f\u0130\7\t\2\2\u0130\u0132\b\23\1\2\u0131"+
-		"\u0110\3\2\2\2\u0131\u0112\3\2\2\2\u0131\u0117\3\2\2\2\u0131\u0121\3\2"+
-		"\2\2\u0131\u0123\3\2\2\2\u0131\u0125\3\2\2\2\u0131\u0127\3\2\2\2\u0131"+
-		"\u012a\3\2\2\2\u0132%\3\2\2\2\32*,\65=HP_fu\u0082\u008f\u0099\u00a3\u00b3"+
-		"\u00bc\u00bf\u00d3\u00dd\u00f0\u00ff\u010b\u011e\u012d\u0131";
+		"\u0084\13\b\3\b\3\b\3\b\3\t\3\t\3\t\3\t\3\t\3\t\5\t\u008f\n\t\3\t\3\t"+
+		"\3\t\3\t\3\t\3\t\3\t\3\t\5\t\u0099\n\t\3\n\3\n\3\n\3\n\3\n\3\n\7\n\u00a1"+
+		"\n\n\f\n\16\n\u00a4\13\n\3\n\3\n\3\n\3\n\3\n\3\13\3\13\3\13\3\13\3\13"+
+		"\3\13\7\13\u00b1\n\13\f\13\16\13\u00b4\13\13\3\13\3\13\3\13\3\13\7\13"+
+		"\u00ba\n\13\f\13\16\13\u00bd\13\13\5\13\u00bf\n\13\3\13\3\13\3\13\3\13"+
+		"\3\f\3\f\3\f\3\f\3\f\3\f\3\f\3\f\3\f\3\f\3\f\3\f\7\f\u00d1\n\f\f\f\16"+
+		"\f\u00d4\13\f\3\f\3\f\3\f\3\f\3\r\3\r\3\r\5\r\u00dd\n\r\3\r\3\r\3\r\3"+
+		"\r\3\16\3\16\3\16\3\16\3\16\3\17\3\17\3\17\3\17\3\17\3\17\7\17\u00ee\n"+
+		"\17\f\17\16\17\u00f1\13\17\3\20\3\20\3\20\3\20\3\20\3\21\3\21\3\21\3\21"+
+		"\3\21\7\21\u00fd\n\21\f\21\16\21\u0100\13\21\3\21\3\21\3\22\3\22\3\22"+
+		"\3\22\3\22\7\22\u0109\n\22\f\22\16\22\u010c\13\22\3\22\3\22\3\23\3\23"+
+		"\3\23\3\23\3\23\3\23\3\23\3\23\3\23\3\23\3\23\3\23\3\23\5\23\u011d\n\23"+
+		"\3\23\3\23\3\23\3\23\3\23\3\23\3\23\3\23\3\23\3\23\3\23\3\23\3\23\5\23"+
+		"\u012c\n\23\3\23\3\23\5\23\u0130\n\23\3\23\2\2\24\2\4\6\b\n\f\16\20\22"+
+		"\24\26\30\32\34\36 \"$\2\5\3\2\17\24\3\2\3\4\3\2\5\7\u0144\2&\3\2\2\2"+
+		"\4\61\3\2\2\2\6D\3\2\2\2\bX\3\2\2\2\nb\3\2\2\2\fu\3\2\2\2\16w\3\2\2\2"+
+		"\20\u0088\3\2\2\2\22\u009a\3\2\2\2\24\u00aa\3\2\2\2\26\u00c4\3\2\2\2\30"+
+		"\u00d9\3\2\2\2\32\u00e2\3\2\2\2\34\u00e7\3\2\2\2\36\u00f2\3\2\2\2 \u00f7"+
+		"\3\2\2\2\"\u0103\3\2\2\2$\u012f\3\2\2\2&,\b\2\1\2\'+\5\4\3\2(+\5\6\4\2"+
+		")+\7\'\2\2*\'\3\2\2\2*(\3\2\2\2*)\3\2\2\2+.\3\2\2\2,*\3\2\2\2,-\3\2\2"+
+		"\2-/\3\2\2\2.,\3\2\2\2/\60\5\n\6\2\60\3\3\2\2\2\61\62\7\27\2\2\62\63\7"+
+		"%\2\2\63\65\7\b\2\2\64\66\5\b\5\2\65\64\3\2\2\2\65\66\3\2\2\2\66\67\3"+
+		"\2\2\2\678\7\t\2\289\7\'\2\29=\b\3\1\2:<\5\f\7\2;:\3\2\2\2<?\3\2\2\2="+
+		";\3\2\2\2=>\3\2\2\2>@\3\2\2\2?=\3\2\2\2@A\7 \2\2AB\7\'\2\2BC\b\3\1\2C"+
+		"\5\3\2\2\2DE\7\30\2\2EF\7%\2\2FH\7\b\2\2GI\5\b\5\2HG\3\2\2\2HI\3\2\2\2"+
+		"IJ\3\2\2\2JK\7\t\2\2KL\7\'\2\2LP\b\4\1\2MO\5\f\7\2NM\3\2\2\2OR\3\2\2\2"+
+		"PN\3\2\2\2PQ\3\2\2\2QS\3\2\2\2RP\3\2\2\2ST\b\4\1\2TU\7 \2\2UV\7\'\2\2"+
+		"VW\b\4\1\2W\7\3\2\2\2XY\7%\2\2Y_\b\5\1\2Z[\7\13\2\2[\\\7%\2\2\\^\b\5\1"+
+		"\2]Z\3\2\2\2^a\3\2\2\2_]\3\2\2\2_`\3\2\2\2`\t\3\2\2\2a_\3\2\2\2bf\b\6"+
+		"\1\2ce\5\f\7\2dc\3\2\2\2eh\3\2\2\2fd\3\2\2\2fg\3\2\2\2gi\3\2\2\2hf\3\2"+
+		"\2\2ij\b\6\1\2j\13\3\2\2\2kv\7\'\2\2lv\5\16\b\2mn\5\20\t\2no\7\'\2\2o"+
+		"v\3\2\2\2pv\5\22\n\2qv\5\24\13\2rv\5\26\f\2sv\5\30\r\2tv\5\32\16\2uk\3"+
+		"\2\2\2ul\3\2\2\2um\3\2\2\2up\3\2\2\2uq\3\2\2\2ur\3\2\2\2us\3\2\2\2ut\3"+
+		"\2\2\2v\r\3\2\2\2wx\7\32\2\2xy\b\b\1\2yz\5 \21\2z\u0082\b\b\1\2{|\7\13"+
+		"\2\2|}\b\b\1\2}~\5 \21\2~\177\b\b\1\2\177\u0081\3\2\2\2\u0080{\3\2\2\2"+
+		"\u0081\u0084\3\2\2\2\u0082\u0080\3\2\2\2\u0082\u0083\3\2\2\2\u0083\u0085"+
+		"\3\2\2\2\u0084\u0082\3\2\2\2\u0085\u0086\7\'\2\2\u0086\u0087\b\b\1\2\u0087"+
+		"\17\3\2\2\2\u0088\u008e\7%\2\2\u0089\u008a\7\r\2\2\u008a\u008b\b\t\1\2"+
+		"\u008b\u008c\5 \21\2\u008c\u008d\7\16\2\2\u008d\u008f\3\2\2\2\u008e\u0089"+
+		"\3\2\2\2\u008e\u008f\3\2\2\2\u008f\u0090\3\2\2\2\u0090\u0098\7\n\2\2\u0091"+
+		"\u0092\5 \21\2\u0092\u0093\b\t\1\2\u0093\u0099\3\2\2\2\u0094\u0095\7\25"+
+		"\2\2\u0095\u0096\5 \21\2\u0096\u0097\b\t\1\2\u0097\u0099\3\2\2\2\u0098"+
+		"\u0091\3\2\2\2\u0098\u0094\3\2\2\2\u0099\21\3\2\2\2\u009a\u009b\7\34\2"+
+		"\2\u009b\u009c\b\n\1\2\u009c\u009d\5\36\20\2\u009d\u009e\7\'\2\2\u009e"+
+		"\u00a2\b\n\1\2\u009f\u00a1\5\f\7\2\u00a0\u009f\3\2\2\2\u00a1\u00a4\3\2"+
+		"\2\2\u00a2\u00a0\3\2\2\2\u00a2\u00a3\3\2\2\2\u00a3\u00a5\3\2\2\2\u00a4"+
+		"\u00a2\3\2\2\2\u00a5\u00a6\b\n\1\2\u00a6\u00a7\7 \2\2\u00a7\u00a8\7\'"+
+		"\2\2\u00a8\u00a9\b\n\1\2\u00a9\23\3\2\2\2\u00aa\u00ab\7\35\2\2\u00ab\u00ac"+
+		"\b\13\1\2\u00ac\u00ad\5\36\20\2\u00ad\u00ae\7\'\2\2\u00ae\u00b2\b\13\1"+
+		"\2\u00af\u00b1\5\f\7\2\u00b0\u00af\3\2\2\2\u00b1\u00b4\3\2\2\2\u00b2\u00b0"+
+		"\3\2\2\2\u00b2\u00b3\3\2\2\2\u00b3\u00b5\3\2\2\2\u00b4\u00b2\3\2\2\2\u00b5"+
+		"\u00be\b\13\1\2\u00b6\u00b7\7\36\2\2\u00b7\u00bb\7\'\2\2\u00b8\u00ba\5"+
+		"\f\7\2\u00b9\u00b8\3\2\2\2\u00ba\u00bd\3\2\2\2\u00bb\u00b9\3\2\2\2\u00bb"+
+		"\u00bc\3\2\2\2\u00bc\u00bf\3\2\2\2\u00bd\u00bb\3\2\2\2\u00be\u00b6\3\2"+
+		"\2\2\u00be\u00bf\3\2\2\2\u00bf\u00c0\3\2\2\2\u00c0\u00c1\b\13\1\2\u00c1"+
+		"\u00c2\7 \2\2\u00c2\u00c3\7\'\2\2\u00c3\25\3\2\2\2\u00c4\u00c5\7\37\2"+
+		"\2\u00c5\u00c6\b\f\1\2\u00c6\u00c7\5\20\t\2\u00c7\u00c8\7\f\2\2\u00c8"+
+		"\u00c9\b\f\1\2\u00c9\u00ca\5\36\20\2\u00ca\u00cb\7\f\2\2\u00cb\u00cc\b"+
+		"\f\1\2\u00cc\u00cd\5\20\t\2\u00cd\u00ce\7\'\2\2\u00ce\u00d2\b\f\1\2\u00cf"+
+		"\u00d1\5\f\7\2\u00d0\u00cf\3\2\2\2\u00d1\u00d4\3\2\2\2\u00d2\u00d0\3\2"+
+		"\2\2\u00d2\u00d3\3\2\2\2\u00d3\u00d5\3\2\2\2\u00d4\u00d2\3\2\2\2\u00d5"+
+		"\u00d6\b\f\1\2\u00d6\u00d7\7 \2\2\u00d7\u00d8\7\'\2\2\u00d8\27\3\2\2\2"+
+		"\u00d9\u00da\7%\2\2\u00da\u00dc\7\b\2\2\u00db\u00dd\5\34\17\2\u00dc\u00db"+
+		"\3\2\2\2\u00dc\u00dd\3\2\2\2\u00dd\u00de\3\2\2\2\u00de\u00df\7\t\2\2\u00df"+
+		"\u00e0\7\'\2\2\u00e0\u00e1\b\r\1\2\u00e1\31\3\2\2\2\u00e2\u00e3\7\31\2"+
+		"\2\u00e3\u00e4\5 \21\2\u00e4\u00e5\b\16\1\2\u00e5\u00e6\7\'\2\2\u00e6"+
+		"\33\3\2\2\2\u00e7\u00e8\5 \21\2\u00e8\u00ef\b\17\1\2\u00e9\u00ea\7\13"+
+		"\2\2\u00ea\u00eb\5 \21\2\u00eb\u00ec\b\17\1\2\u00ec\u00ee\3\2\2\2\u00ed"+
+		"\u00e9\3\2\2\2\u00ee\u00f1\3\2\2\2\u00ef\u00ed\3\2\2\2\u00ef\u00f0\3\2"+
+		"\2\2\u00f0\35\3\2\2\2\u00f1\u00ef\3\2\2\2\u00f2\u00f3\5 \21\2\u00f3\u00f4"+
+		"\t\2\2\2\u00f4\u00f5\5 \21\2\u00f5\u00f6\b\20\1\2\u00f6\37\3\2\2\2\u00f7"+
+		"\u00fe\5\"\22\2\u00f8\u00f9\t\3\2\2\u00f9\u00fa\5\"\22\2\u00fa\u00fb\b"+
+		"\21\1\2\u00fb\u00fd\3\2\2\2\u00fc\u00f8\3\2\2\2\u00fd\u0100\3\2\2\2\u00fe"+
+		"\u00fc\3\2\2\2\u00fe\u00ff\3\2\2\2\u00ff\u0101\3\2\2\2\u0100\u00fe\3\2"+
+		"\2\2\u0101\u0102\b\21\1\2\u0102!\3\2\2\2\u0103\u010a\5$\23\2\u0104\u0105"+
+		"\t\4\2\2\u0105\u0106\5$\23\2\u0106\u0107\b\22\1\2\u0107\u0109\3\2\2\2"+
+		"\u0108\u0104\3\2\2\2\u0109\u010c\3\2\2\2\u010a\u0108\3\2\2\2\u010a\u010b"+
+		"\3\2\2\2\u010b\u010d\3\2\2\2\u010c\u010a\3\2\2\2\u010d\u010e\b\22\1\2"+
+		"\u010e#\3\2\2\2\u010f\u0110\7$\2\2\u0110\u0130\b\23\1\2\u0111\u0112\7"+
+		"\b\2\2\u0112\u0113\5 \21\2\u0113\u0114\7\t\2\2\u0114\u0115\b\23\1\2\u0115"+
+		"\u0130\3\2\2\2\u0116\u011c\7%\2\2\u0117\u0118\7\r\2\2\u0118\u0119\b\23"+
+		"\1\2\u0119\u011a\5 \21\2\u011a\u011b\7\16\2\2\u011b\u011d\3\2\2\2\u011c"+
+		"\u0117\3\2\2\2\u011c\u011d\3\2\2\2\u011d\u011e\3\2\2\2\u011e\u0130\b\23"+
+		"\1\2\u011f\u0120\7\33\2\2\u0120\u0130\b\23\1\2\u0121\u0122\7!\2\2\u0122"+
+		"\u0130\b\23\1\2\u0123\u0124\7\"\2\2\u0124\u0130\b\23\1\2\u0125\u0126\7"+
+		"\26\2\2\u0126\u0127\7%\2\2\u0127\u0130\b\23\1\2\u0128\u0129\7%\2\2\u0129"+
+		"\u012b\7\b\2\2\u012a\u012c\5\34\17\2\u012b\u012a\3\2\2\2\u012b\u012c\3"+
+		"\2\2\2\u012c\u012d\3\2\2\2\u012d\u012e\7\t\2\2\u012e\u0130\b\23\1\2\u012f"+
+		"\u010f\3\2\2\2\u012f\u0111\3\2\2\2\u012f\u0116\3\2\2\2\u012f\u011f\3\2"+
+		"\2\2\u012f\u0121\3\2\2\2\u012f\u0123\3\2\2\2\u012f\u0125\3\2\2\2\u012f"+
+		"\u0128\3\2\2\2\u0130%\3\2\2\2\32*,\65=HP_fu\u0082\u008e\u0098\u00a2\u00b2"+
+		"\u00bb\u00be\u00d2\u00dc\u00ef\u00fe\u010a\u011c\u012b\u012f";
 	public static final ATN _ATN =
 		new ATNDeserializer().deserialize(_serializedATN.toCharArray());
 	static {
